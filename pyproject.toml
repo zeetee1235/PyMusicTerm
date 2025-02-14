@@ -1,0 +1,16 @@
+[project]
+name = "pymusicterm"
+version = "0.1.0"
+description = "play music from your termninal"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "just-playback>=0.1.8",
+    "msgspec>=0.19.0",
+    "pydub>=0.25.1",
+    "pytubefix>=8.12.1",
+    "textual>=1.0.0",
+    "textual-dev>=1.7.0",
+    "tomli-w>=1.2.0",
+    "ytmusicapi>=1.10.1",
+]
