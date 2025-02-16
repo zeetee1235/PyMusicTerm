@@ -4,26 +4,19 @@ from pydub import AudioSegment
 from pathlib import Path
 
 
-class Song(Protocol):
-    """Protocol for a song"""
+class SongData(Protocol):
+    title: str
+    duration: str
+    videoId: str
 
-    @property
-    def title(self) -> str:
-        """The title of the song"""
-
-    @property
-    def videoId(self) -> str:
-        """The videoId of the song"""
-
-    def get_formatted_artists(self) -> str:
-        """Get the formatted artists names of the song"""
+    def get_formatted_artists(self) -> str: ...
 
 
 class Downloader:
     def __init__(self, download_path: str):
         self.download_path = download_path
 
-    def download(self, song: Song) -> str | None:
+    def download(self, song: SongData) -> str | None:
         """Download a song from a song object and return the path of the downloaded file.
         If the file already exists, it will not be downloaded again and the path will be returned.
 
@@ -45,7 +38,7 @@ class Downloader:
         self._delete_file(yt_path)
         return str(converted_path)
 
-    def _download_from_yt(self, song: Song) -> str:
+    def _download_from_yt(self, song: SongData) -> str:
         """Download a song from a song
 
         Args:

@@ -1,5 +1,10 @@
 import ytmusicapi
+from ytmusicapi.exceptions import YTMusicError
 from dataclasses import dataclass
+
+import ytmusicapi.exceptions
+import ytmusicapi.ytmusic
+from api.lyrics import LyricsDownloader
 
 
 @dataclass
@@ -9,24 +14,29 @@ class SongArtist:
 
 
 @dataclass
-class SearchSongResult:
+class SearchResult:
     title: str
     artist: list[SongArtist]
-    album: str
     duration: int
     videoId: str
-    thumbnail: str
 
     def get_formatted_artists(self) -> str:
         """Get the formatted artists of the song"""
         return ", ".join([artist.name for artist in self.artist])
 
 
-class YTMusic:
-    def __init__(self):
-        self.client = ytmusicapi.YTMusic()
+@dataclass
+class LyricsResult:
+    lyrics: str
+    source: str
 
-    def search(self, query: str, filter: str = "songs") -> list[SearchSongResult]:
+
+class YTMusic:
+    def __init__(self, lyrics_downloader: LyricsDownloader):
+        self.client = ytmusicapi.YTMusic()
+        self.lyrics_downloader = lyrics_downloader
+
+    def search(self, query: str, filter: str = "songs") -> list[SearchResult]:
         """Search for a song on YTMusic
         Args:
             query (str): The query to search for
@@ -36,13 +46,35 @@ class YTMusic:
         """
         results = self.client.search(query, filter)
         return [
-            SearchSongResult(
+            SearchResult(
                 title=result["title"],
                 artist=[SongArtist(**artist) for artist in result["artists"]],
-                album=result["album"]["name"],
                 duration=result["duration"],
                 videoId=result["videoId"],
-                thumbnail=result["thumbnails"][0]["url"],
             )
             for result in results
         ]
+
+    def get_lyrics(self, song: SearchResult) -> LyricsResult | None:
+        """Get the lyrics of a song
+        Args:
+            video_id (str): The video id of the song
+        Returns:
+            str: The lyrics of the song
+        """
+        lyrics_id = self.client.get_watch_playlist(song.videoId)["lyrics"]
+        try:
+            lyrics = self.client.get_lyrics(lyrics_id)
+        except ytmusicapi.exceptions.YTMusicError:
+            lyrics = None
+
+        if lyrics:
+            return self.lyrics_downloader.save(
+                LyricsResult(
+                    lyrics=lyrics["lyrics"],
+                    source=lyrics["source"],
+                ),
+                song,
+            )
+        else:
+            return None

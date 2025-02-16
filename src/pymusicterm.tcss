@@ -18,3 +18,12 @@ Rule {
     margin: 0;
     padding: 0;
 }
+
+.control_label {
+    padding: 1;
+    align: center middle;
+}
+
+.player_status {
+    align: center bottom;
+}

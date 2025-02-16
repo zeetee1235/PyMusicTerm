@@ -58,9 +58,10 @@ class MusicPlayer:
     def position(self, value: float) -> None:
         self.player.seek(value)
 
-    def song_length(self) -> float:
-        return self.player.duration
-
     @property
     def active(self) -> bool:
         return self.player.active
+
+    @property
+    def song_length(self) -> float:
+        return self.player.duration

@@ -7,6 +7,8 @@ APP_DIR = Path(HOME / ".pymusicterm")
 MUSIC_DIR = Path(APP_DIR / "musics")
 SETTING_FILE = Path(APP_DIR / "setting.toml")
 PLAYLIST_DIR = Path(APP_DIR / "playlists")
+LYRICS_DIR = Path(APP_DIR / "lyrics")
+LOG_DIR = Path(APP_DIR / "logs")
 
 
 @dataclass
@@ -19,6 +21,19 @@ class Setting:
     music_dir: str = str(MUSIC_DIR)
     setting_file: str = str(SETTING_FILE)
     playlist_dir: str = str(PLAYLIST_DIR)
+    lyrics_dir: str = str(LYRICS_DIR)
+    log_dir: str = str(LOG_DIR)
+
+
+@dataclass
+class KeyBinding:
+    """All the keybindings of the app"""
+
+    volume_up: str = "k"
+    volume_down: str = "j"
+    seek_back: str = "q"
+    seek_forward: str = "d"
+    play_pause: str = "s"
 
 
 class SettingLoader(Setting):
@@ -39,6 +54,12 @@ class SettingLoader(Setting):
 
         if not PLAYLIST_DIR.exists():
             PLAYLIST_DIR.mkdir()
+
+        if not LYRICS_DIR.exists():
+            LYRICS_DIR.mkdir()
+
+        if not LOG_DIR.exists():
+            LOG_DIR.mkdir()
 
     @property
     def setting(self) -> Setting:
