@@ -1,4 +1,3 @@
-import sys
 from player.player import PyMusicTermPlayer
 from textual.app import App, ComposeResult
 from textual.widget import Widget
@@ -25,7 +24,7 @@ from textual.worker import get_current_worker
 from typing import Protocol
 from loguru import logger
 
-from setting import SettingLoader
+from setting import SettingLoader, rename_console
 
 
 class SongData(Protocol):
@@ -48,8 +47,8 @@ class PyMusicTerm(App):
         ("d", "seek_forward", "Seek forward"),
         ("r", "shuffle", "Shuffle"),
         ("l", "loop", "Loop at the end"),
-        ("a", "return_on_search_tab", "Go to the search tab"),
-        ("e", "return_on_playlist_tab", "Go to the playlist tab"),
+        ("&", "return_on_search_tab", "Go to the search tab"),
+        ("é", "return_on_playlist_tab", "Go to the playlist tab"),
         ("k", "volume_up", "Volume up"),
         ("j", "volume_down", "Volume down"),
     ]
@@ -57,6 +56,7 @@ class PyMusicTerm(App):
     def __init__(self) -> None:
         super().__init__(css_path="pymusicterm.tcss")
         self.setting = SettingLoader().setting
+        rename_console("PyMusicTerm")
         logger.remove()
         logger.add(
             Path(self.setting.log_dir + "/pymusicterm.log"),

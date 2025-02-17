@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from msgspec import toml
+import os
 
 HOME = Path.home()
 APP_DIR = Path(HOME / ".pymusicterm")
@@ -89,6 +90,16 @@ class SettingLoader(Setting):
         with open(SETTING_FILE, "wb") as f:
             encoded = toml.encode(setting)
             f.write(encoded)
+
+
+def rename_console(name: str) -> None:
+    """Rename the console
+
+    Args:
+        name (str): The new name of the console
+    """
+
+    os.system(f"title {name}")
 
 
 if __name__ == "__main__":
