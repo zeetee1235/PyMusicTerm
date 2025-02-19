@@ -175,7 +175,7 @@ name = "click"
 version = "8.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "platform_system == 'Windows'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b9/2e/0090cbf739cee7d23781ad4b89a9894a41538e4fcf4c31dcdd705b78eb8b/click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a", size = 226593 }
 wheels = [
@@ -189,6 +189,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44", size = 27697 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335 },
+]
+
+[[package]]
+name = "emoji"
+version = "2.14.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/7d/01cddcbb6f5cc0ba72e00ddf9b1fa206c802d557fd0a20b18e130edf1336/emoji-2.14.1.tar.gz", hash = "sha256:f8c50043d79a2c1410ebfae833ae1868d5941a67a6cd4d18377e2eb0bd79346b", size = 597182 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/91/db/a0335710caaa6d0aebdaa65ad4df789c15d89b7babd9a30277838a7d9aac/emoji-2.14.1-py3-none-any.whl", hash = "sha256:35a8a486c1460addb1499e3bf7929d3889b2e2841a57401903699fef595e942b", size = 590617 },
 ]
 
 [[package]]
@@ -391,6 +400,22 @@ wheels = [
 ]
 
 [[package]]
+name = "mpris-server"
+version = "0.9.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "emoji" },
+    { name = "pydbus" },
+    { name = "pygobject" },
+    { name = "strenum" },
+    { name = "unidecode" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/82/f1/9397b8b697b7bb15f848dc9fd68cefa663a85e95f4a0c028fcb65e5e107a/mpris_server-0.9.6.tar.gz", hash = "sha256:4f465e0d089820084a47c6b0de2bf7aedc3373e4743d342e221ebe1e2e2b2074", size = 27722 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ab/79/15590e73b935eb1a1bbc6adb5e2a3165d522b84b29d6c9b8ad74f56bf521/mpris_server-0.9.6-py2.py3-none-any.whl", hash = "sha256:13e8ffaa3b6b907c743b6ba76e9a3dfe4c2274e0a8c99ca03f66d6073c39a7fe", size = 26529 },
+]
+
+[[package]]
 name = "msgpack"
 version = "1.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -532,12 +557,33 @@ wheels = [
 ]
 
 [[package]]
+name = "pycairo"
+version = "1.27.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/07/4a/42b26390181a7517718600fa7d98b951da20be982a50cd4afb3d46c2e603/pycairo-1.27.0.tar.gz", hash = "sha256:5cb21e7a00a2afcafea7f14390235be33497a2cce53a98a19389492a60628430", size = 661450 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1c/65/7664fe3d9928572b7804c651a99cfd6113338eee7436d5b25401c9382619/pycairo-1.27.0-cp312-cp312-win32.whl", hash = "sha256:e2239b9bb6c05edae5f3be97128e85147a155465e644f4d98ea0ceac7afc04ee", size = 750005 },
+    { url = "https://files.pythonhosted.org/packages/f4/bd/114597b9f79fbdb4eb0a4bf4aa54e70246d87f512a880e66a85c1e2ff407/pycairo-1.27.0-cp312-cp312-win_amd64.whl", hash = "sha256:27cb4d3a80e3b9990af552818515a8e466e0317063a6e61585533f1a86f1b7d5", size = 844100 },
+    { url = "https://files.pythonhosted.org/packages/93/76/35d2feef50584cb00d2b4d2215337b0bc765508f8856735a41bfedcb4699/pycairo-1.27.0-cp313-cp313-win32.whl", hash = "sha256:01505c138a313df2469f812405963532fc2511fb9bca9bdc8e0ab94c55d1ced8", size = 750001 },
+    { url = "https://files.pythonhosted.org/packages/9c/e7/92d6e57deee53229bb8b3f7df6d02c503585be7bdd69cb9e54f34aab089b/pycairo-1.27.0-cp313-cp313-win_amd64.whl", hash = "sha256:b0349d744c068b6644ae23da6ada111c8a8a7e323b56cbce3707cba5bdb474cc", size = 844102 },
+]
+
+[[package]]
 name = "pycparser"
 version = "2.22"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1d/b2/31537cf4b1ca988837256c910a668b553fceb8f069bedc4b1c826024b52c/pycparser-2.22.tar.gz", hash = "sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6", size = 172736 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/13/a3/a812df4e2dd5696d1f351d58b8fe16a405b234ad2886a0dab9183fb78109/pycparser-2.22-py3-none-any.whl", hash = "sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc", size = 117552 },
+]
+
+[[package]]
+name = "pydbus"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/58/56/3e84f2c1f2e39b9ea132460183f123af41e3b9c8befe222a35636baa6a5a/pydbus-0.6.0.tar.gz", hash = "sha256:4207162eff54223822c185da06c1ba8a34137a9602f3da5a528eedf3f78d0f2c", size = 22079 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/92/56/27148014c2f85ce70332f18612f921f682395c7d4e91ec103783be4fce00/pydbus-0.6.0-py2.py3-none-any.whl", hash = "sha256:66b80106352a718d80d6c681dc2a82588048e30b75aab933e4020eb0660bf85e", size = 19580 },
 ]
 
 [[package]]
@@ -559,12 +605,22 @@ wheels = [
 ]
 
 [[package]]
+name = "pygobject"
+version = "3.50.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pycairo" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2b/58/d34e67a79631177e3c08e7d02b5165147f590171f2cae6769502af5f7f7e/pygobject-3.50.0.tar.gz", hash = "sha256:4500ad3dbf331773d8dedf7212544c999a76fc96b63a91b3dcac1e5925a1d103", size = 1080367 }
+
+[[package]]
 name = "pymusicterm"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "just-playback" },
     { name = "loguru" },
+    { name = "mpris-server" },
     { name = "msgspec" },
     { name = "pydub" },
     { name = "pytubefix" },
@@ -578,6 +634,7 @@ dependencies = [
 requires-dist = [
     { name = "just-playback", specifier = ">=0.1.8" },
     { name = "loguru", specifier = ">=0.7.3" },
+    { name = "mpris-server", specifier = ">=0.9.6" },
     { name = "msgspec", specifier = ">=0.19.0" },
     { name = "pydub", specifier = ">=0.25.1" },
     { name = "pytubefix", specifier = ">=8.12.1" },
@@ -622,6 +679,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ab/3a/0316b28d0761c6734d6bc14e770d85506c986c85ffb239e688eeaab2c2bc/rich-13.9.4.tar.gz", hash = "sha256:439594978a49a09530cff7ebc4b5c7103ef57baf48d5ea3184f21d9a2befa098", size = 223149 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/19/71/39c7c0d87f8d4e6c020a393182060eaefeeae6c01dab6a84ec346f2567df/rich-13.9.4-py3-none-any.whl", hash = "sha256:6049d5e6ec054bf2779ab3358186963bac2ea89175919d699e378b99738c2a90", size = 242424 },
+]
+
+[[package]]
+name = "strenum"
+version = "0.4.15"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/85/ad/430fb60d90e1d112a62ff57bdd1f286ec73a2a0331272febfddd21f330e1/StrEnum-0.4.15.tar.gz", hash = "sha256:878fb5ab705442070e4dd1929bb5e2249511c0bcf2b0eeacf3bcd80875c82eff", size = 23384 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/81/69/297302c5f5f59c862faa31e6cb9a4cd74721cd1e052b38e464c5b402df8b/StrEnum-0.4.15-py3-none-any.whl", hash = "sha256:a30cda4af7cc6b5bf52c8055bc4bf4b2b6b14a93b574626da33df53cf7740659", size = 8851 },
 ]
 
 [[package]]
@@ -706,6 +772,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/91/7a/146a99696aee0609e3712f2b44c6274566bc368dfe8375191278045186b8/uc-micro-py-1.0.3.tar.gz", hash = "sha256:d321b92cff673ec58027c04015fcaa8bb1e005478643ff4a500882eaab88c48a", size = 6043 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/37/87/1f677586e8ac487e29672e4b17455758fce261de06a0d086167bb760361a/uc_micro_py-1.0.3-py3-none-any.whl", hash = "sha256:db1dffff340817673d7b466ec86114a9dc0e9d4d9b5ba229d9d60e5c12600cd5", size = 6229 },
+]
+
+[[package]]
+name = "unidecode"
+version = "1.3.8"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f7/89/19151076a006b9ac0dd37b1354e031f5297891ee507eb624755e58e10d3e/Unidecode-1.3.8.tar.gz", hash = "sha256:cfdb349d46ed3873ece4586b96aa75258726e2fa8ec21d6f00a591d98806c2f4", size = 192701 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/84/b7/6ec57841fb67c98f52fc8e4a2d96df60059637cba077edc569a302a8ffc7/Unidecode-1.3.8-py3-none-any.whl", hash = "sha256:d130a61ce6696f8148a3bd8fe779c99adeb4b870584eeb9526584e9aa091fd39", size = 235494 },
 ]
 
 [[package]]

@@ -1,3 +1,6 @@
+from mpris_server import Server
+from api.player import MusicPlayer
+from player.mpris import HAdapter
 from player.player import PyMusicTermPlayer
 from textual.app import App, ComposeResult
 from textual.widget import Widget
@@ -55,6 +58,7 @@ class PyMusicTerm(App):
 
     def __init__(self) -> None:
         super().__init__(css_path="pymusicterm.tcss")
+        
         self.setting = SettingLoader().setting
         rename_console("PyMusicTerm")
         logger.remove()
@@ -63,10 +67,16 @@ class PyMusicTerm(App):
             format="{time} {level} {message}",
             level="INFO",
         )
-
-        self.player = PyMusicTermPlayer(self.setting)
         self.timer: Widget | None = None
+        
+        my_adapter = HAdapter()
+        mpris = Server('PyMusicTerm', adapter=my_adapter)
+        self.music_player = MusicPlayer()
+        self.player = PyMusicTermPlayer(self.setting, self.music_player, mpris.player, mpris.root)
+        my_adapter.setup(self.player)
+        mpris.loop(background=True)
 
+        
     def compose(self) -> ComposeResult:
         yield Footer()
         with TabbedContent(classes="search_tabs", id="tabbed_content"):
@@ -124,7 +134,7 @@ class PyMusicTerm(App):
             for i, song in enumerate(self.player.list_of_downloaded_songs):
                 playlist_results.add_option(
                     Option(
-                        f"{i+1}. {Path(song).stem}",
+                        f"{i + 1}. {Path(song).stem}",
                         id=i,
                     )
                 )
@@ -149,13 +159,16 @@ class PyMusicTerm(App):
         lyrics_results: MarkdownViewer = self.query_one("#lyrics_results")
         if not self.player.playing:
             return
-        current_lyric = self.player.list_of_lyrics[
-            self.player.list_of_downloaded_songs[self.player.current_song_index]
-        ]
-        if current_lyric:
-            with open(current_lyric, "r", encoding="utf-8") as f:
-                lyrics_results.document.update(f.read())
-        else:
+        try:
+            current_lyric = self.player.list_of_lyrics[
+                self.player.list_of_downloaded_songs[self.player.current_song_index]
+            ]
+            if current_lyric:
+                with open(current_lyric, "r", encoding="utf-8") as f:
+                    lyrics_results.document.update(f.read())
+            else:
+                lyrics_results.document.update("No lyrics now")
+        except KeyError:
             lyrics_results.document.update("No lyrics now")
 
     def action_return_on_search_tab(self):
@@ -260,7 +273,7 @@ class PyMusicTerm(App):
         for i, result in enumerate(results):
             search_results.add_option(
                 Option(
-                    f"{i+1}. {result.title} - {result.get_formatted_artists()}",
+                    f"{i + 1}. {result.title} - {result.get_formatted_artists()}",
                     result.videoId,
                 )
             )

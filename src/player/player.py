@@ -1,4 +1,6 @@
 from pathlib import Path
+
+from mpris_server import EventAdapter
 from api.ytmusic import SearchResult, YTMusic
 from api.player import MusicPlayer
 from api.downloader import Downloader
@@ -7,13 +9,16 @@ from api.local import fetch_lyrics_from_folder, fetch_songs_from_folder
 from random import shuffle
 from api.lyrics import LyricsDownloader
 
-
-class PyMusicTermPlayer:
-    def __init__(self, setting: SettingLoader):
+    
+    
+class PyMusicTermPlayer(EventAdapter):
+    def __init__(self, setting: SettingLoader, music_player: MusicPlayer, mpris_player, mpris_root):
+        super().__init__(root=mpris_root, player=mpris_player)
         self.setting = setting
+        
         lyrics = LyricsDownloader(self.setting.lyrics_dir)
         self.ytm = YTMusic(lyrics)
-        self.player = MusicPlayer()
+        self.music_player = music_player
         self.downloader = Downloader(self.setting.music_dir)
         self.list_of_downloaded_songs: list[str] = fetch_songs_from_folder(
             self.setting.music_dir
@@ -21,6 +26,7 @@ class PyMusicTermPlayer:
         self.list_of_lyrics: dict[str, str] = self.map_lyrics_to_song()
         self.dict_of_song_result: dict[str, SearchResult] = {}
         self.current_song_index = 0
+    
 
     def query(self, query: str, filter: str) -> list[SearchResult]:
         """Query the YTMusic API for a song
@@ -50,8 +56,9 @@ class PyMusicTermPlayer:
         self.ytm.get_lyrics(song)
         self.list_of_downloaded_songs = fetch_songs_from_folder(self.setting.music_dir)
         self.list_of_lyrics = self.map_lyrics_to_song()
-        self.player.load_song(str(path))
-        self.player.play_song()
+        self.music_player.load_song(str(path))
+        self.music_player.play_song()
+        self.on_playback()
 
     def play_from_list(self, id: int) -> None:
         """Play a song from the list of downloaded songs
@@ -62,8 +69,10 @@ class PyMusicTermPlayer:
         self.current_song_index = id
         self.list_of_downloaded_songs = fetch_songs_from_folder(self.setting.music_dir)
         self.list_of_lyrics = self.map_lyrics_to_song()
-        self.player.load_song(self.list_of_downloaded_songs[id])
-        self.player.play_song()
+        self.music_player.load_song(self.list_of_downloaded_songs[id])
+        self.music_player.play_song()
+        self.on_playback()
+
 
     def previous(self) -> None:
         """Play the previous song"""
@@ -71,8 +80,10 @@ class PyMusicTermPlayer:
             self.current_song_index = len(self.list_of_downloaded_songs) - 1
         else:
             self.current_song_index -= 1
-        self.player.load_song(self.list_of_downloaded_songs[self.current_song_index])
-        self.player.play_song()
+        self.music_player.load_song(self.list_of_downloaded_songs[self.current_song_index])
+        self.music_player.play_song()
+        self.on_playback()
+
 
     def next(self) -> None:
         """Play the next song"""
@@ -80,16 +91,17 @@ class PyMusicTermPlayer:
             self.current_song_index = 0
         else:
             self.current_song_index += 1
-        self.player.load_song(self.list_of_downloaded_songs[self.current_song_index])
-        self.player.play_song()
+        self.music_player.load_song(self.list_of_downloaded_songs[self.current_song_index])
+        self.music_player.play_song()
+        self.on_playback()
 
-    def seek_forward(self) -> None:
+    def seek_forward(self, time: float = 10) -> None:
         """Seek forward"""
-        self.player.position += 10
+        self.music_player.position += time
 
-    def seek_back(self) -> None:
+    def seek_back(self, time: float = 10) -> None:
         """Seek backward"""
-        self.player.position -= 10
+        self.music_player.position -= time
 
     def suffle(self) -> None:
         """Shuffle the list of downloaded songs"""
@@ -97,14 +109,14 @@ class PyMusicTermPlayer:
 
     def loop_at_end(self) -> bool:
         """Loop at the end"""
-        self.player.loop_at_end = not self.player.loop_at_end
-        return self.player.loop_at_end
+        self.music_player.loop_at_end = not self.music_player.loop_at_end
+        return self.music_player.loop_at_end
 
     def update(self) -> None:
         """Update the player"""
-        if self.player.loop_at_end:
+        if self.music_player.loop_at_end:
             return
-        if self.player.position == 0 and not self.player.playing:
+        if self.music_player.position == 0 and not self.music_player.playing:
             self.next()
 
     def map_lyrics_to_song(self) -> None:
@@ -120,33 +132,40 @@ class PyMusicTermPlayer:
                     list_of_lyrics[song] = None
         return list_of_lyrics
 
+    def stop(self) -> None:
+        self.music_player.unload_song()
+
     @property
     def song_length(self) -> float:
         """Get the song length"""
-        return self.player.song_length
+        return self.music_player.song_length
 
     @property
     def position(self) -> float:
         """Get the current position"""
-        return self.player.position
+        return self.music_player.position
 
     def volume_up(self) -> None:
         """Get the volume up"""
-        self.player.volume += 0.1
+        self.music_player.volume += 0.1
+        self.on_volume()
 
     def volume_down(self) -> None:
         """Get the volume down"""
-        self.player.volume -= 0.1
+        self.music_player.volume -= 0.1
+        self.on_volume()
 
     @property
     def playing(self) -> bool:
         """Get the playing status"""
-        return self.player.playing
+        return self.music_player.playing
 
     def pause_song(self) -> None:
         """Pause the song"""
-        self.player.pause_song()
+        self.music_player.pause_song()
+        self.on_playpause()
 
     def resume_song(self) -> None:
         """Resume the song"""
-        self.player.resume_song()
+        self.music_player.resume_song()
+        self.on_playpause()

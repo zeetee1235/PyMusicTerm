@@ -98,8 +98,10 @@ def rename_console(name: str) -> None:
     Args:
         name (str): The new name of the console
     """
-
-    os.system(f"title {name}")
+    if os.name == "nt":
+        os.system(f"title {name}")
+    else:
+        print(f"\33]0;{name}\a", end="", flush=True)
 
 
 if __name__ == "__main__":
