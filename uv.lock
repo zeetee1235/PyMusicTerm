@@ -309,10 +309,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "just-playback" },
     { name = "loguru" },
-<<<<<<< HEAD
     { name = "mpris-server", marker = "sys_platform != 'win32'" },
-=======
->>>>>>> 866685845631f3f1294a6185f6885cf45c966b75
     { name = "msgspec" },
     { name = "pydub" },
     { name = "pytubefix" },
@@ -325,10 +322,7 @@ dependencies = [
 requires-dist = [
     { name = "just-playback", specifier = ">=0.1.8" },
     { name = "loguru", specifier = ">=0.7.3" },
-<<<<<<< HEAD
     { name = "mpris-server", marker = "sys_platform != 'win32'", specifier = ">=0.9.6" },
-=======
->>>>>>> 866685845631f3f1294a6185f6885cf45c966b75
     { name = "msgspec", specifier = ">=0.19.0" },
     { name = "pydub", specifier = ">=0.25.1" },
     { name = "pytubefix", specifier = ">=8.12.1" },
