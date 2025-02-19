@@ -1,4 +1,4 @@
-from api.player import MusicPlayer
+from api.ytmusic import SongData
 from player.player import PyMusicTermPlayer
 from textual.app import App, ComposeResult
 from textual.widget import Widget
@@ -14,36 +14,28 @@ from textual.widgets import (
     Footer,
     MarkdownViewer,
     ProgressBar,
+    Switch,
 )
 from textual.widgets.option_list import Option
 from textual.containers import Horizontal, Vertical
 from textual import on
+from textual.reactive import reactive
 from pathlib import Path
 from datetime import timedelta
 from textual import work
 from textual.worker import get_current_worker
-from typing import Protocol
 from loguru import logger
 import sys
 if sys.platform == "win32": 
     from player.media_control import MediaControlWin32 as MediaControl
 else:
     from player.media_control import MediaControlMPRIS as MediaControl
-from setting import SettingLoader, rename_console
-
-
-class SongData(Protocol):
-    title: str
-    duration: str
-    videoId: str
-
-    def get_formatted_artists(self) -> str: ...
+from setting import SettingManager, rename_console
 
 
 def format_time(time: float) -> str:
     """Format the time to a string"""
     return str(timedelta(seconds=int(time))).removeprefix("0:")
-
 
 class PyMusicTerm(App):
     BINDINGS = [
@@ -54,14 +46,14 @@ class PyMusicTerm(App):
         ("l", "loop", "Loop at the end"),
         ("&", "return_on_search_tab", "Go to the search tab"),
         ("é", "return_on_playlist_tab", "Go to the playlist tab"),
-        ("k", "volume_up", "Volume up"),
-        ("j", "volume_down", "Volume down"),
+        ("k", "volume(0.1)", "Volume up"),
+        ("j", "volume(-0.1)", "Volume down"),
     ]
 
     def __init__(self) -> None:
         super().__init__(css_path="pymusicterm.tcss")
         
-        self.setting = SettingLoader().setting
+        self.setting = SettingManager()
         rename_console("PyMusicTerm")
         logger.remove()
         logger.add(
@@ -71,10 +63,8 @@ class PyMusicTerm(App):
         )
         self.timer: Widget | None = None
         self.media_control = MediaControl()
-        self.music_player = MusicPlayer()
-        self.player = PyMusicTermPlayer(self.setting, self.music_player, self.media_control)
+        self.player = PyMusicTermPlayer(self.setting, self.media_control)
         self.media_control.init(self.player)
-
         
     def compose(self) -> ComposeResult:
         yield Footer()
@@ -158,18 +148,15 @@ class PyMusicTerm(App):
         lyrics_results: MarkdownViewer = self.query_one("#lyrics_results")
         if not self.player.playing:
             return
-        try:
-            current_lyric = self.player.list_of_lyrics[
+        current_lyric = self.player.dict_of_lyrics[
                 self.player.list_of_downloaded_songs[self.player.current_song_index]
             ]
-            if current_lyric:
-                with open(current_lyric, "r", encoding="utf-8") as f:
-                    lyrics_results.document.update(f.read())
-            else:
-                lyrics_results.document.update("No lyrics now")
-        except KeyError:
-            lyrics_results.document.update("No lyrics now")
-
+        logger.warning(current_lyric)
+        logger.warning(self.player.dict_of_lyrics)
+        logger.warning(self.player.list_of_downloaded_songs[self.player.current_song_index])
+        with open(current_lyric, "r", encoding="utf-8") as f:
+            lyrics_results.document.update(f.read())
+            
     def action_return_on_search_tab(self):
         """Set the search tab as the active tab"""
         tab: TabbedContent = self.query_one("#tabbed_content")
@@ -280,19 +267,17 @@ class PyMusicTerm(App):
 
     def action_seek_back(self) -> None:
         """Seek backward 10 seconds"""
-        self.player.seek_back()
+        self.player.seek(-10)
 
     def action_seek_forward(self) -> None:
         """Seek forward 10 seconds"""
-        self.player.seek_forward()
+        self.player.seek(10)
 
-    def action_volume_up(self) -> None:
+    def action_volume(self, value: float) -> None:
         """Increase the volume"""
-        self.player.volume_up()
+        self.player.volume(value)
 
-    def action_volume_down(self) -> None:
-        """Decrease the volume"""
-        self.player.volume_down()
+
 
 
 def main():
