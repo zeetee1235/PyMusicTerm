@@ -13,9 +13,5 @@ dependencies = [
     "tomli-w>=1.2.0",
     "ytmusicapi>=1.10.1",
     "loguru>=0.7.3",
-<<<<<<< HEAD
     "mpris-server>=0.9.6; sys_platform != 'win32'",
-=======
-    "jax; sys_platform == 'linux'",
->>>>>>> 866685845631f3f1294a6185f6885cf45c966b75
 ]
