@@ -1,6 +1,6 @@
 # pymusicterm
 
-**pymusicterm** is a terminal-based music player that allows you to play your favorite songs directly from your terminal. It only supports local files.
+**pymusicterm** is a terminal-based music player that allows you to play your favorite songs directly from your terminal. 
 
 ## Features
 
@@ -42,7 +42,6 @@ Make sure all dependencies are met, including `ffmpeg`.
 
 
 ### Basic Commands
-- **Play local files:** Add the path to the file or directory.
 - **Download from YouTube:** Search for a song or paste the URL.
 - **Control playback:** Use keyboard shortcuts to play, pause, skip, or adjust volume.
 
