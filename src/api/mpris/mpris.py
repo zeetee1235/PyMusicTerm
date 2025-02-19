@@ -1,19 +1,17 @@
 from pathlib import Path
-from mpris_server import EventAdapter
 
 from typing import List
 from mpris_server.adapters import Metadata, PlayState, MprisAdapter
 from mpris_server.base import URI, MIME_TYPES, BEGINNING, DEFAULT_RATE, DbusObj
 from mpris_server.server import Server
 import sys
-from player.player import PyMusicTermPlayer
 
 class HAdapter(MprisAdapter):
     def __init__(self):
         super().__init__()
         self.player = None
     
-    def setup(self, player: PyMusicTermPlayer):
+    def setup(self, player):
         self.player = player
     
     def get_uri_schemes(self) -> List[str]:

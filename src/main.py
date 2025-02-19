@@ -1,6 +1,4 @@
-from mpris_server import Server
 from api.player import MusicPlayer
-from player.mpris import HAdapter
 from player.player import PyMusicTermPlayer
 from textual.app import App, ComposeResult
 from textual.widget import Widget
@@ -26,7 +24,11 @@ from textual import work
 from textual.worker import get_current_worker
 from typing import Protocol
 from loguru import logger
-
+import sys
+if sys.platform == "win32": 
+    from player.media_control import MediaControlWin32 as MediaControl
+else:
+    from player.media_control import MediaControlMPRIS as MediaControl
 from setting import SettingLoader, rename_console
 
 
@@ -68,13 +70,10 @@ class PyMusicTerm(App):
             level="INFO",
         )
         self.timer: Widget | None = None
-        
-        my_adapter = HAdapter()
-        mpris = Server('PyMusicTerm', adapter=my_adapter)
+        self.media_control = MediaControl()
         self.music_player = MusicPlayer()
-        self.player = PyMusicTermPlayer(self.setting, self.music_player, mpris.player, mpris.root)
-        my_adapter.setup(self.player)
-        mpris.loop(background=True)
+        self.player = PyMusicTermPlayer(self.setting, self.music_player, self.media_control)
+        self.media_control.init(self.player)
 
         
     def compose(self) -> ComposeResult:

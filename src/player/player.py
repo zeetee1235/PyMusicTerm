@@ -1,9 +1,8 @@
 from pathlib import Path
-
-from mpris_server import EventAdapter
 from api.ytmusic import SearchResult, YTMusic
 from api.player import MusicPlayer
 from api.downloader import Downloader
+from player.media_control import MediaControl
 from setting import SettingLoader
 from api.local import fetch_lyrics_from_folder, fetch_songs_from_folder
 from random import shuffle
@@ -11,11 +10,10 @@ from api.lyrics import LyricsDownloader
 
     
     
-class PyMusicTermPlayer(EventAdapter):
-    def __init__(self, setting: SettingLoader, music_player: MusicPlayer, mpris_player, mpris_root):
-        super().__init__(root=mpris_root, player=mpris_player)
+class PyMusicTermPlayer:
+    def __init__(self, setting: SettingLoader, music_player: MusicPlayer, media_control: MediaControl) -> None:
+        self.media_control = media_control
         self.setting = setting
-        
         lyrics = LyricsDownloader(self.setting.lyrics_dir)
         self.ytm = YTMusic(lyrics)
         self.music_player = music_player
@@ -58,7 +56,7 @@ class PyMusicTermPlayer(EventAdapter):
         self.list_of_lyrics = self.map_lyrics_to_song()
         self.music_player.load_song(str(path))
         self.music_player.play_song()
-        self.on_playback()
+        self.media_control.on_playback()
 
     def play_from_list(self, id: int) -> None:
         """Play a song from the list of downloaded songs
@@ -71,7 +69,7 @@ class PyMusicTermPlayer(EventAdapter):
         self.list_of_lyrics = self.map_lyrics_to_song()
         self.music_player.load_song(self.list_of_downloaded_songs[id])
         self.music_player.play_song()
-        self.on_playback()
+        self.media_control.on_playback()
 
 
     def previous(self) -> None:
@@ -82,7 +80,7 @@ class PyMusicTermPlayer(EventAdapter):
             self.current_song_index -= 1
         self.music_player.load_song(self.list_of_downloaded_songs[self.current_song_index])
         self.music_player.play_song()
-        self.on_playback()
+        self.media_control.on_playback()
 
 
     def next(self) -> None:
@@ -93,7 +91,7 @@ class PyMusicTermPlayer(EventAdapter):
             self.current_song_index += 1
         self.music_player.load_song(self.list_of_downloaded_songs[self.current_song_index])
         self.music_player.play_song()
-        self.on_playback()
+        self.media_control.on_playback()
 
     def seek_forward(self, time: float = 10) -> None:
         """Seek forward"""
@@ -148,12 +146,12 @@ class PyMusicTermPlayer(EventAdapter):
     def volume_up(self) -> None:
         """Get the volume up"""
         self.music_player.volume += 0.1
-        self.on_volume()
+        self.media_control.on_volume()
 
     def volume_down(self) -> None:
         """Get the volume down"""
         self.music_player.volume -= 0.1
-        self.on_volume()
+        self.media_control.on_volume()
 
     @property
     def playing(self) -> bool:
@@ -163,9 +161,9 @@ class PyMusicTermPlayer(EventAdapter):
     def pause_song(self) -> None:
         """Pause the song"""
         self.music_player.pause_song()
-        self.on_playpause()
+        self.media_control.on_playpause()
 
     def resume_song(self) -> None:
         """Resume the song"""
         self.music_player.resume_song()
-        self.on_playpause()
+        self.media_control.on_playpause()
