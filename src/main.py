@@ -1,7 +1,4 @@
-try:
-    from mpris_server import Server
-except ImportError:
-    pass
+from mpris_server import Server
 from api.player import MusicPlayer
 from player.mpris import HAdapter
 from player.player import PyMusicTermPlayer
