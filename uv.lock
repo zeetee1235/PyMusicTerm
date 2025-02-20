@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.12, <4"
 
 [[package]]
@@ -101,6 +102,15 @@ name = "ffmpeg"
 version = "1.4"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f0/cc/3b7408b8ecf7c1d20ad480c3eaed7619857bf1054b690226e906fdf14258/ffmpeg-1.4.tar.gz", hash = "sha256:6931692c890ff21d39938433c2189747815dca0c60ddc7f9bb97f199dba0b5b9", size = 5055 }
+
+[[package]]
+name = "humanize"
+version = "4.12.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5b/8c/4f2f0784d08a383b5de3d3b1d65a6f204cc5dc487621c91c550388d756af/humanize-4.12.1.tar.gz", hash = "sha256:1338ba97415c96556758a6e2f65977ed406dddf4620d4c6db9bbdfd07f0f1232", size = 80827 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/30/5ef5994b090398f9284d2662f56853e5183ae2cb5d8e3db67e4f4cfea407/humanize-4.12.1-py3-none-any.whl", hash = "sha256:86014ca5c52675dffa1d404491952f1f5bf03b07c175a51891a343daebf01fea", size = 127409 },
+]
 
 [[package]]
 name = "idna"
@@ -253,43 +263,36 @@ wheels = [
 [[package]]
 name = "musicterm"
 version = "0.0.5"
-source = { editable = "." }
+source = { virtual = "." }
 dependencies = [
     { name = "ffmpeg" },
+    { name = "humanize" },
     { name = "just-playback" },
     { name = "loguru" },
     { name = "mpris-server", marker = "sys_platform != 'win32'" },
     { name = "msgspec" },
-    { name = "pip" },
     { name = "pydub" },
     { name = "pytubefix" },
     { name = "textual" },
     { name = "tomli-w" },
+    { name = "win11toast", marker = "sys_platform == 'win32'" },
     { name = "ytmusicapi" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "ffmpeg", specifier = ">=1.4" },
+    { name = "humanize", specifier = ">=4.12.1" },
     { name = "just-playback", specifier = ">=0.1.8" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "mpris-server", marker = "sys_platform != 'win32'", specifier = ">=0.9.0" },
     { name = "msgspec", specifier = ">=0.19.0" },
-    { name = "pip", specifier = ">=25.0.1" },
     { name = "pydub", specifier = ">=0.25.1" },
     { name = "pytubefix", specifier = ">=8.12.1" },
     { name = "textual", specifier = ">=1.0.0" },
     { name = "tomli-w", specifier = ">=1.2.0" },
+    { name = "win11toast", marker = "sys_platform == 'win32'", specifier = ">=0.35" },
     { name = "ytmusicapi", specifier = ">=1.10.1" },
-]
-
-[[package]]
-name = "pip"
-version = "25.0.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/70/53/b309b4a497b09655cb7e07088966881a57d082f48ac3cb54ea729fd2c6cf/pip-25.0.1.tar.gz", hash = "sha256:88f96547ea48b940a3a385494e181e29fb8637898f88d88737c5049780f196ea", size = 1950850 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c9/bc/b7db44f5f39f9d0494071bddae6880eb645970366d0a200022a1a93d57f5/pip-25.0.1-py3-none-any.whl", hash = "sha256:c46efd13b6aa8279f33f2864459c8ce587ea6a1a59ee20de055868d8f7688f7f", size = 1841526 },
 ]
 
 [[package]]
@@ -468,12 +471,35 @@ wheels = [
 ]
 
 [[package]]
+name = "win11toast"
+version = "0.35"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "winsdk" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/53/0c/b4e60e842a6d73d15d93efdba64f1bcd9cbed5dc8c1ca50c99464c37f86f/win11toast-0.35.tar.gz", hash = "sha256:59215bee9bd14e5651603fca791f05ac5932e6b864cb515c8bdfdb2da97b8376", size = 9929 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e8/31/6535a49af22bb3131136f7751d68456fa88adca9b01a42fe2d54c676a67c/win11toast-0.35-py3-none-any.whl", hash = "sha256:1e101516c283884b987969d0b8f27dc79d4b19273243899070c2cd0d6b86cbb4", size = 9826 },
+]
+
+[[package]]
 name = "win32-setctime"
 version = "1.2.0"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b3/8f/705086c9d734d3b663af0e9bb3d4de6578d08f46b1b101c2442fd9aecaa2/win32_setctime-1.2.0.tar.gz", hash = "sha256:ae1fdf948f5640aae05c511ade119313fb6a30d7eabe25fef9764dca5873c4c0", size = 4867 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/07/c6fe3ad3e685340704d314d765b7912993bcb8dc198f0e7a89382d37974b/win32_setctime-1.2.0-py3-none-any.whl", hash = "sha256:95d644c4e708aba81dc3704a116d8cbc974d70b3bdb8be1d150e36be6e9d1390", size = 4083 },
+]
+
+[[package]]
+name = "winsdk"
+version = "1.0.0b10"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f5/01/005772332e79947013aa33c7cb20431e3efd6ac46eb54aed3472c14afe50/winsdk-1.0.0b10.tar.gz", hash = "sha256:8f39ea759626797449371f857c9085b84bb9f3b6d493dc6525e2cedcb3d15ea2", size = 7061492 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/04/67/3eeaf41b0e7a4e1e627e1940fbf2f8e2c936161d0652dd9e462d70b79913/winsdk-1.0.0b10-cp312-cp312-win32.whl", hash = "sha256:775a55a71e05ec2aa262c1fd67d80f270d4186bbdbbee2f43c9c412cf76f0761", size = 9393830 },
+    { url = "https://files.pythonhosted.org/packages/0c/87/a5ffbb9613fcd3917183707ac16c88e82d22a1faf933bb9a3e04fff2f289/winsdk-1.0.0b10-cp312-cp312-win_amd64.whl", hash = "sha256:8231ce5f16e1fc88bb7dda0adf35633b5b26101eae3b0799083ca2177f03e4e5", size = 12015329 },
+    { url = "https://files.pythonhosted.org/packages/39/9c/64365f88dead53c38dfb07e992c13fc66698ad7221be56e17e641448cca7/winsdk-1.0.0b10-cp312-cp312-win_arm64.whl", hash = "sha256:f4ab469ada19b34ccfc69a148090f98b40a1da1da797b50b9cbba0c090c365a5", size = 11596120 },
 ]
 
 [[package]]

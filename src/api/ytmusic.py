@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Protocol
 import ytmusicapi.exceptions
 import ytmusicapi.ytmusic
-from pymusicterm.api.lyrics import LyricsDownloader
+from api.lyrics import LyricsDownloader
+
 
 class SongData(Protocol):
     title: str

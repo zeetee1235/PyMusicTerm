@@ -6,14 +6,17 @@ from mpris_server.base import URI, MIME_TYPES, BEGINNING, DEFAULT_RATE, DbusObj
 from mpris_server.server import Server
 import sys
 
+from player.player import PyMusicTermPlayer
+
+
 class HAdapter(MprisAdapter):
     def __init__(self):
         super().__init__()
-        self.player = None
-    
+        self.player: PyMusicTermPlayer | None = None
+
     def setup(self, player):
         self.player = player
-    
+
     def get_uri_schemes(self) -> List[str]:
         return URI
 
@@ -46,7 +49,7 @@ class HAdapter(MprisAdapter):
 
     def play(self):
         self.player.playing
-        
+
     def get_playstate(self) -> PlayState:
         if not self.player.playing:
             return PlayState.PAUSED
@@ -81,11 +84,11 @@ class HAdapter(MprisAdapter):
         return False
 
     def get_art_url(self, track):
-        print('Later')
-        return 'Later'
+        print("Later")
+        return "Later"
 
     def get_stream_title(self):
-        print('Later again')
+        print("Later again")
 
     def is_mute(self) -> bool:
         return False
@@ -94,7 +97,7 @@ class HAdapter(MprisAdapter):
         return True
 
     def can_go_previous(self) -> bool:
-        return  True
+        return True
 
     def can_play(self) -> bool:
         return True
@@ -112,24 +115,23 @@ class HAdapter(MprisAdapter):
         return "Test title"
 
     def metadata(self) -> dict:
-        song_data = Path(self.player.list_of_downloaded_songs[self.player.current_song_index]).stem.split(" - ")
+        song_data = Path(
+            self.player.list_of_downloaded_songs[self.player.current_song_index]
+        ).stem.split(" - ")
         title = ", ".join(song_data[:-1])
         artist = song_data[-1]
         metadata = {
-        "mpris:trackid": "/track/1",
-        "mpris:length": self.player.song_length if not 0 else None,
-        "mpris:artUrl": "Example",
-        "xesam:url": "https://google.com",
-        "xesam:title": title,
-        "xesam:artist": [artist],
-        "xesam:album": "",
-        "xesam:albumArtist": [],
-        "xesam:discNumber": 1,
-        "xesam:trackNumber": 1,
-        "xesam:comment": [],
+            "mpris:trackid": "/track/1",
+            "mpris:length": self.player.song_length if not 0 else None,
+            "mpris:artUrl": "Example",
+            "xesam:url": "https://google.com",
+            "xesam:title": title,
+            "xesam:artist": [artist],
+            "xesam:album": "",
+            "xesam:albumArtist": [],
+            "xesam:discNumber": 1,
+            "xesam:trackNumber": 1,
+            "xesam:comment": [],
         }
 
         return metadata
-        
-
-

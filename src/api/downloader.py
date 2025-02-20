@@ -1,7 +1,19 @@
+import sys
 from typing import Protocol
-from pytubefix import YouTube
+from pytubefix import YouTube, Stream
 from pydub import AudioSegment
 from pathlib import Path
+
+if sys.platform == "win32":
+    from .windows.notification import Notification as Notification
+else:
+
+    class Notification(Protocol):
+        def update_download_progress(self, value: int, total: int) -> None: ...
+
+        def update_progress(self, value: int, total: int) -> None: ...
+
+        def finish_download(self) -> None: ...
 
 
 class SongData(Protocol):
@@ -13,7 +25,7 @@ class SongData(Protocol):
 
 
 class Downloader:
-    def __init__(self, download_path: str):
+    def __init__(self, download_path: str) -> None:
         self.download_path = download_path
 
     def download(self, song: SongData) -> str | None:
@@ -26,7 +38,12 @@ class Downloader:
         Returns:
             path (str): The path of the downloaded file or None if the download failed
         """
-
+        self.notification = Notification(
+            title=f"{song.title} - {song.get_formatted_artists()}",
+            status="Downloading...",
+            value=0,
+            valueStringOverride="",
+        )
         song_path = Path(
             f"{self.download_path}/{song.title} - {song.get_formatted_artists()}.mp3"
         )
@@ -34,8 +51,12 @@ class Downloader:
             return str(song_path)
 
         yt_path = self._download_from_yt(song)
+        self.notification.update_progress(2, 4)
         converted_path = self._convert_to_mp3(yt_path)
+        self.notification.update_progress(3, 4)
         self._delete_file(yt_path)
+        self.notification.update_progress(4, 4)
+        self.notification.finish_download()
         return str(converted_path)
 
     def _download_from_yt(self, song: SongData) -> str:
@@ -49,7 +70,8 @@ class Downloader:
         """
         yt = YouTube(
             f"https://www.youtube.com/watch?v={song.videoId}",
-            on_progress_callback=self.download_callback,
+            on_progress_callback=self.on_progress,
+            on_complete_callback=self.finish,
         )
         return yt.streams.get_audio_only().download(
             output_path=self.download_path,
@@ -77,12 +99,11 @@ class Downloader:
         """
         Path(path).unlink(missing_ok=True)
 
-    def download_callback(self, stream: str, chunk: bytes, total: int) -> None:
-        """Callback for the download process
+    def on_progress(self, stream: Stream, chunk: bytes, bytes_remaining: int) -> None:  # pylint: disable=W0613
+        filesize = stream.filesize
+        bytes_received = filesize - bytes_remaining
+        self.notification.update_download_progress(bytes_received, filesize)
 
-        Args:
-            stream (str): The stream of the download
-            chunk (bytes): The chunk of the download
-            total (int): The total size of the download
-        """
-        print(f"Downloading {chunk}/{total}")
+    def finish(self, path: str, stream: Stream) -> None:
+        """Finish the download"""
+        self.notification.update_progress(1, 4)

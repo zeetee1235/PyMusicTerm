@@ -1,17 +1,20 @@
 from pathlib import Path
-from pymusicterm.api.ytmusic import SearchResult, YTMusic
-from pymusicterm.api.player import MusicPlayer
-from pymusicterm.api.downloader import Downloader
-from pymusicterm.player.media_control import MediaControl
-from pymusicterm.setting import SettingManager
-from pymusicterm.api.local import fetch_lyrics_from_folder, fetch_songs_from_folder
+from api.ytmusic import SearchResult, YTMusic
+from api.player import MusicPlayer
+from api.downloader import Downloader
+from player.media_control import MediaControl
+from setting import SettingManager
+from api.local import fetch_songs_from_folder
 from random import shuffle
-from pymusicterm.api.lyrics import LyricsDownloader
+from api.lyrics import LyricsDownloader
 
-    
-    
+
 class PyMusicTermPlayer:
-    def __init__(self, setting: SettingManager, media_control: MediaControl) -> None:
+    def __init__(
+        self,
+        setting: SettingManager,
+        media_control: MediaControl,
+    ) -> None:
         self.media_control = media_control
         self.setting = setting
         self.music_player = MusicPlayer(self.setting.volume)
@@ -24,7 +27,6 @@ class PyMusicTermPlayer:
         self.dict_of_lyrics: dict[str, str] = self.map_lyrics_to_song()
         self.dict_of_song_result: dict[str, SearchResult] = {}
         self.current_song_index = 0
-    
 
     def query(self, query: str, filter: str) -> list[SearchResult]:
         """Query the YTMusic API for a song
@@ -71,17 +73,17 @@ class PyMusicTermPlayer:
         self.music_player.play_song()
         self.media_control.on_playback()
 
-
     def previous(self) -> None:
         """Play the previous song"""
         if self.current_song_index == 0:
             self.current_song_index = len(self.list_of_downloaded_songs) - 1
         else:
             self.current_song_index -= 1
-        self.music_player.load_song(self.list_of_downloaded_songs[self.current_song_index])
+        self.music_player.load_song(
+            self.list_of_downloaded_songs[self.current_song_index]
+        )
         self.music_player.play_song()
         self.media_control.on_playback()
-
 
     def next(self) -> None:
         """Play the next song"""
@@ -89,7 +91,9 @@ class PyMusicTermPlayer:
             self.current_song_index = 0
         else:
             self.current_song_index += 1
-        self.music_player.load_song(self.list_of_downloaded_songs[self.current_song_index])
+        self.music_player.load_song(
+            self.list_of_downloaded_songs[self.current_song_index]
+        )
         self.music_player.play_song()
         self.media_control.on_playback()
 
@@ -118,11 +122,13 @@ class PyMusicTermPlayer:
         if self.music_player.position == 0 and not self.music_player.playing:
             self.next()
 
-    def map_lyrics_to_song(self) -> None:
+    def map_lyrics_to_song(self) -> dict[str, str]:
         """Map the lyrics to the songs"""
         list_of_lyrics: dict[str, str] = {}
         for song in fetch_songs_from_folder(self.setting.music_dir):
-            lyric = self.setting.lyrics_dir + f"/{Path(song).stem.removesuffix('.mp3')}.md"
+            lyric = (
+                self.setting.lyrics_dir + f"/{Path(song).stem.removesuffix('.mp3')}.md"
+            )
             list_of_lyrics[song] = Path(lyric)
         return list_of_lyrics
 

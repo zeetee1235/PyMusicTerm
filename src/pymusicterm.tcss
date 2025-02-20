@@ -20,7 +20,7 @@ Rule {
 }
 
 .control_label {
-    padding: 1;
+    padding: 0 1;
     align: center middle;
 }
 

@@ -1,5 +1,5 @@
-from pymusicterm.api.ytmusic import SongData
-from pymusicterm.player.player import PyMusicTermPlayer
+from api.ytmusic import SongData
+from player.player import PyMusicTermPlayer
 from textual.app import App, ComposeResult
 from textual.widget import Widget
 from textual.widgets import (
@@ -14,12 +14,10 @@ from textual.widgets import (
     Footer,
     MarkdownViewer,
     ProgressBar,
-    Switch,
 )
 from textual.widgets.option_list import Option
 from textual.containers import Horizontal, Vertical
 from textual import on
-from textual.reactive import reactive
 from pathlib import Path
 from datetime import timedelta
 from textual import work
@@ -28,10 +26,10 @@ from loguru import logger
 import sys
 
 if sys.platform == "win32":
-    from pymusicterm.player.media_control import MediaControlWin32 as MediaControl
+    from player.media_control import MediaControlWin32 as MediaControl
 else:
-    from pymusicterm.player.media_control import MediaControlMPRIS as MediaControl
-from pymusicterm.setting import SettingManager, rename_console
+    from player.media_control import MediaControlMPRIS as MediaControl
+from setting import SettingManager, rename_console
 
 
 def format_time(time: float) -> str:
@@ -48,15 +46,15 @@ class PyMusicTerm(App):
         ("l", "loop", "Loop at the end"),
         ("&", "return_on_search_tab", "Go to the search tab"),
         ("é", "return_on_playlist_tab", "Go to the playlist tab"),
-        ("k", "volume(0.1)", "Volume up"),
         ("j", "volume(-0.1)", "Volume down"),
+        ("k", "volume(0.01)", "Volume up"),
     ]
 
-    def __init__(self) -> None:
-        super().__init__(css_path="pymusicterm.tcss")
-
-        self.setting = SettingManager()
+    def __init__(self, setting: SettingManager) -> None:
+        super().__init__(css_path="pymusicterm.tcss", watch_css=True)
+        self.setting = setting
         rename_console("PyMusicTerm")
+
         logger.remove()
         logger.add(
             Path(self.setting.log_dir + "/pymusicterm.log"),
@@ -101,7 +99,10 @@ class PyMusicTerm(App):
                 "--:--", id="label_current_song_position", classes="control_label"
             )
             yield ProgressBar(
-                total=100, show_eta=False, show_percentage=False, id="player_status"
+                total=100,
+                show_eta=False,
+                show_percentage=False,
+                id="player_status",
             )
             yield Label("--:--", id="label_song_length", classes="control_label")
         with Horizontal(classes="player_controls"):
@@ -142,7 +143,10 @@ class PyMusicTerm(App):
         current_float = self.player.position
         label_current_song_position.update(format_time(current_float))
         label_song_length.update(format_time(length_float))
-        percentage = current_float / length_float
+        try:
+            percentage = current_float / length_float
+        except ZeroDivisionError:
+            percentage = 0.01
         progress_bar.update(
             progress=percentage * 100,
         )
@@ -150,6 +154,7 @@ class PyMusicTerm(App):
         lyrics_results: MarkdownViewer = self.query_one("#lyrics_results")
         if not self.player.playing:
             return
+        self.player.dict_of_lyrics = self.player.map_lyrics_to_song()
         current_lyric = self.player.dict_of_lyrics[
             self.player.list_of_downloaded_songs[self.player.current_song_index]
         ]
@@ -207,7 +212,7 @@ class PyMusicTerm(App):
         else:
             button.label = "Play"
         if self.timer is None:
-            self.timer = self.set_interval(1, self.update_time, name="update_time")
+            self.timer = self.set_interval(0.1, self.update_time, name="update_time")
 
     @on(Button.Pressed, "#next")
     def action_next(self) -> None:
@@ -283,7 +288,8 @@ class PyMusicTerm(App):
 
 
 def main():
-    app = PyMusicTerm()
+    setting = SettingManager()
+    app = PyMusicTerm(setting)
     app.run()
 
 
