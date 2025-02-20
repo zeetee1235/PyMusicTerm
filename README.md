@@ -15,20 +15,7 @@
 ### Prerequisites
 - Python 3.12 or higher.
 - `ffmpeg` (required for `pydub` and audio processing).
-
-You can install `pymusicterm` via pip:
-
-```bash
-pip install musicterm
-```
-
-```bash
-python -m pymusicterm
-```
-
-Make sure all dependencies are met, including `ffmpeg`.
-
-
+- 
 ### Basic Commands
 - **Download from YouTube:** Search for a song or paste the URL.
 - **Control playback:** Use keyboard shortcuts to play, pause, skip, or adjust volume.
