@@ -10,12 +10,24 @@
 - Cross-platform support (Linux, macOS, Windows).
 - MPRIS server integration for Linux to control playback with external tools.
 
-## Installation
+## Installation with uv
+```bash	
+pip install uv
+git clone https://github.com/ZachVFXX/PyMusicTerm.git
+cd PyMusicTerm
+uv sync #or pip install the dependencies
+```
+
+
+## Usage
+```bash	
+uv run main.py #or python main.py
+```
 
 ### Prerequisites
 - Python 3.12 or higher.
 - `ffmpeg` (required for `pydub` and audio processing).
-- 
+
 ### Basic Commands
 - **Download from YouTube:** Search for a song or paste the URL.
 - **Control playback:** Use keyboard shortcuts to play, pause, skip, or adjust volume.
@@ -23,7 +35,6 @@
 ## Configuration
 
 The player reads a configuration file (`pymusicterm.toml`) for custom settings in the `~/.pymusicterm` directory.
-
 
 ## Dependencies
 
@@ -38,6 +49,9 @@ The player reads a configuration file (`pymusicterm.toml`) for custom settings i
 - [`ytmusicapi`](https://pypi.org/project/ytmusicapi/): YouTube Music API integration.
 - [`loguru`](https://pypi.org/project/loguru/): Advanced logging.
 - [`mpris-server`](https://pypi.org/project/mpris-server/): MPRIS integration (Linux and macos only).
+- [`win11toast`](https://pypi.org/project/win11toast/): Windows notifications (Windows only).
+- [`ffmpeg`](https://ffmpeg.org/): Audio processing.
+- [`humanize`](https://pypi.org/project/humanize/): Human-readable file sizes.
 
 ## Contributing
 
