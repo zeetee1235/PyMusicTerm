@@ -1,19 +1,17 @@
 from pathlib import Path
-from mpris_server import EventAdapter
 
 from typing import List
 from mpris_server.adapters import Metadata, PlayState, MprisAdapter
 from mpris_server.base import URI, MIME_TYPES, BEGINNING, DEFAULT_RATE, DbusObj
 from mpris_server.server import Server
 import sys
-from player.player import PyMusicTermPlayer
 
 class HAdapter(MprisAdapter):
     def __init__(self):
         super().__init__()
         self.player = None
     
-    def setup(self, player: PyMusicTermPlayer):
+    def setup(self, player):
         self.player = player
     
     def get_uri_schemes(self) -> List[str]:
@@ -115,15 +113,15 @@ class HAdapter(MprisAdapter):
 
     def metadata(self) -> dict:
         song_data = Path(self.player.list_of_downloaded_songs[self.player.current_song_index]).stem.split(" - ")
-        title = song_data[0]
-        artist = song_data[1]
+        title = ", ".join(song_data[:-1])
+        artist = song_data[-1]
         metadata = {
         "mpris:trackid": "/track/1",
-        "mpris:length": self.player.song_length,
+        "mpris:length": self.player.song_length if not 0 else None,
         "mpris:artUrl": "Example",
         "xesam:url": "https://google.com",
         "xesam:title": title,
-        "xesam:artist": song_data,
+        "xesam:artist": [artist],
         "xesam:album": "",
         "xesam:albumArtist": [],
         "xesam:discNumber": 1,

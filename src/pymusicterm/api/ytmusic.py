@@ -1,10 +1,22 @@
 import ytmusicapi
 from ytmusicapi.exceptions import YTMusicError
 from dataclasses import dataclass
-
+from typing import Protocol
 import ytmusicapi.exceptions
 import ytmusicapi.ytmusic
-from api.lyrics import LyricsDownloader
+from pymusicterm.api.lyrics import LyricsDownloader
+
+class SongData(Protocol):
+    title: str
+    duration: str
+    videoId: str
+
+    def get_formatted_artists(self) -> str:
+        """Format the list of artists to a string
+
+        Returns:
+            str: a string with the formatted artists
+        """
 
 
 @dataclass
@@ -14,7 +26,7 @@ class SongArtist:
 
 
 @dataclass
-class SearchResult:
+class SearchResult(SongData):
     title: str
     artist: list[SongArtist]
     duration: int
@@ -77,4 +89,10 @@ class YTMusic:
                 song,
             )
         else:
-            return None
+            return self.lyrics_downloader.save(
+                LyricsResult(
+                    lyrics="None",
+                    source="None",
+                ),
+                song,
+            )

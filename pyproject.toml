@@ -1,9 +1,10 @@
 [project]
-name = "pymusicterm"
-version = "0.1.0"
-description = "play music from your termninal"
+name = "MusicTerm"
+version = "0.0.5"
+authors = [{ name = "ZachVFX", email = "zachallrd@gmail.com" }]
+description = "play music from your termninal."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = "~=3.12"
 dependencies = [
     "just-playback>=0.1.8",
     "msgspec>=0.19.0",
@@ -13,5 +14,24 @@ dependencies = [
     "tomli-w>=1.2.0",
     "ytmusicapi>=1.10.1",
     "loguru>=0.7.3",
-    "jax; sys_platform == 'linux'",
+    "mpris-server>=0.9.0; sys_platform != 'win32'",
+    "pip>=25.0.1",
+    "ffmpeg>=1.4",
 ]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.urls]
+Homepage = "https://github.com/ZachVFXX/PyMusicTerm"
+Issues = "https://github.com/ZachVFXX/PyMusicTerm/issues"
+
+[tool.setuptools]
+license-files = []
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
