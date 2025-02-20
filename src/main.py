@@ -1,4 +1,7 @@
-from mpris_server import Server
+try:
+    from mpris_server import Server
+except ImportError:
+    pass
 from api.player import MusicPlayer
 from player.mpris import HAdapter
 from player.player import PyMusicTermPlayer
@@ -58,7 +61,7 @@ class PyMusicTerm(App):
 
     def __init__(self) -> None:
         super().__init__(css_path="pymusicterm.tcss")
-        
+
         self.setting = SettingLoader().setting
         rename_console("PyMusicTerm")
         logger.remove()
@@ -68,15 +71,16 @@ class PyMusicTerm(App):
             level="INFO",
         )
         self.timer: Widget | None = None
-        
+
         my_adapter = HAdapter()
-        mpris = Server('PyMusicTerm', adapter=my_adapter)
+        mpris = Server("PyMusicTerm", adapter=my_adapter)
         self.music_player = MusicPlayer()
-        self.player = PyMusicTermPlayer(self.setting, self.music_player, mpris.player, mpris.root)
+        self.player = PyMusicTermPlayer(
+            self.setting, self.music_player, mpris.player, mpris.root
+        )
         my_adapter.setup(self.player)
         mpris.loop(background=True)
 
-        
     def compose(self) -> ComposeResult:
         yield Footer()
         with TabbedContent(classes="search_tabs", id="tabbed_content"):
