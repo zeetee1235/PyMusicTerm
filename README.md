@@ -18,21 +18,9 @@
 
 You can install `pymusicterm` via pip:
 
-
-Clone the repository:
-
 ```bash
-git clone https://github.com/yourusername/pymusicterm.git
-cd pymusicterm
+pip install musicterm
 ```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run the application:
 
 ```bash
 python -m pymusicterm
@@ -63,7 +51,7 @@ The player reads a configuration file (`pymusicterm.toml`) for custom settings i
 - [`tomli-w`](https://pypi.org/project/tomli-w/): TOML configuration management.
 - [`ytmusicapi`](https://pypi.org/project/ytmusicapi/): YouTube Music API integration.
 - [`loguru`](https://pypi.org/project/loguru/): Advanced logging.
-- [`mpris-server`](https://pypi.org/project/mpris-server/): MPRIS integration (Linux-only).
+- [`mpris-server`](https://pypi.org/project/mpris-server/): MPRIS integration (Linux and macos only).
 
 ## Contributing
 

@@ -1,12 +1,12 @@
 from pathlib import Path
-from api.ytmusic import SearchResult, YTMusic
-from api.player import MusicPlayer
-from api.downloader import Downloader
-from player.media_control import MediaControl
-from setting import SettingManager
-from api.local import fetch_lyrics_from_folder, fetch_songs_from_folder
+from pymusicterm.api.ytmusic import SearchResult, YTMusic
+from pymusicterm.api.player import MusicPlayer
+from pymusicterm.api.downloader import Downloader
+from pymusicterm.player.media_control import MediaControl
+from pymusicterm.setting import SettingManager
+from pymusicterm.api.local import fetch_lyrics_from_folder, fetch_songs_from_folder
 from random import shuffle
-from api.lyrics import LyricsDownloader
+from pymusicterm.api.lyrics import LyricsDownloader
 
     
     

@@ -7,7 +7,7 @@ if sys.platform == "win32":
 else:
     from mpris_server import EventAdapter
     from mpris_server import EventAdapter, Server
-    from api.mpris.mpris import HAdapter
+    from pymusicterm.api.mpris.mpris import HAdapter
     
     
 class MediaControl(Protocol):

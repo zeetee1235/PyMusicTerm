@@ -1,5 +1,5 @@
-from api.ytmusic import SongData
-from player.player import PyMusicTermPlayer
+from pymusicterm.api.ytmusic import SongData
+from pymusicterm.player.player import PyMusicTermPlayer
 from textual.app import App, ComposeResult
 from textual.widget import Widget
 from textual.widgets import (
@@ -27,10 +27,10 @@ from textual.worker import get_current_worker
 from loguru import logger
 import sys
 if sys.platform == "win32": 
-    from player.media_control import MediaControlWin32 as MediaControl
+    from pymusicterm.player.media_control import MediaControlWin32 as MediaControl
 else:
-    from player.media_control import MediaControlMPRIS as MediaControl
-from setting import SettingManager, rename_console
+    from pymusicterm.player.media_control import MediaControlMPRIS as MediaControl
+from pymusicterm.setting import SettingManager, rename_console
 
 
 def format_time(time: float) -> str:
