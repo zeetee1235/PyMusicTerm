@@ -1,20 +1,8 @@
-import sys
 from typing import Protocol
 from pytubefix import YouTube, Stream
 from pydub import AudioSegment
 from pathlib import Path
-
-if sys.platform == "win32":
-    from .windows.notification import Notification as Notification
-else:
-
-    class Notification(Protocol):
-        def update_download_progress(self, value: int, total: int) -> None: ...
-
-        def update_progress(self, value: int, total: int) -> None: ...
-
-        def finish_download(self) -> None: ...
-
+from api.notification_manager import NotificationManager
 
 class SongData(Protocol):
     title: str
@@ -27,6 +15,7 @@ class SongData(Protocol):
 class Downloader:
     def __init__(self, download_path: str) -> None:
         self.download_path = download_path
+        self.notification = NotificationManager()
 
     def download(self, song: SongData) -> str | None:
         """Download a song from a song object and return the path of the downloaded file.
@@ -38,25 +27,24 @@ class Downloader:
         Returns:
             path (str): The path of the downloaded file or None if the download failed
         """
-        self.notification = Notification(
-            title=f"{song.title} - {song.get_formatted_artists()}",
-            status="Downloading...",
-            value=0,
-            valueStringOverride="",
-        )
+        self.song = song
+
         song_path = Path(
             f"{self.download_path}/{song.title} - {song.get_formatted_artists()}.mp3"
         )
         if song_path.exists():
             return str(song_path)
 
+        self.notification.send_notification(f"Downloading {song.title} - {song.get_formatted_artists()}", "Starting download - 1/4")
         yt_path = self._download_from_yt(song)
-        self.notification.update_progress(2, 4)
+
+        self.notification.send_notification(f"Downloading {self.song.title} - {self.song.get_formatted_artists()}", f"Song converted to mp3 - 2/4")
         converted_path = self._convert_to_mp3(yt_path)
-        self.notification.update_progress(3, 4)
+
+        self.notification.send_notification(f"Downloading {self.song.title} - {self.song.get_formatted_artists()}", f"Deleting cache - 3/4")
         self._delete_file(yt_path)
-        self.notification.update_progress(4, 4)
-        self.notification.finish_download()
+        
+        self.notification.send_notification(f"Downloading {self.song.title} - {self.song.get_formatted_artists()}", f"Download finished - 4/4")
         return str(converted_path)
 
     def _download_from_yt(self, song: SongData) -> str:
@@ -71,7 +59,6 @@ class Downloader:
         yt = YouTube(
             f"https://www.youtube.com/watch?v={song.videoId}",
             on_progress_callback=self.on_progress,
-            on_complete_callback=self.finish,
         )
         return yt.streams.get_audio_only().download(
             output_path=self.download_path,
@@ -99,11 +86,8 @@ class Downloader:
         """
         Path(path).unlink(missing_ok=True)
 
-    def on_progress(self, stream: Stream, chunk: bytes, bytes_remaining: int) -> None:  # pylint: disable=W0613
+    def on_progress(self, stream: Stream, chunk: bytes, bytes_remaining: int) -> None:
         filesize = stream.filesize
         bytes_received = filesize - bytes_remaining
-        self.notification.update_download_progress(bytes_received, filesize)
+        self.notification.send_notification(f"Downloading {self.song.title} - {self.song.get_formatted_artists()}", f"Download {bytes_received/filesize} - 1/4")
 
-    def finish(self, path: str, stream: Stream) -> None:
-        """Finish the download"""
-        self.notification.update_progress(1, 4)

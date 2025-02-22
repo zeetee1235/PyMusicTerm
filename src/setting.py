@@ -12,6 +12,8 @@ PLAYLIST_DIR = Path(APP_DIR / "playlists")
 LYRICS_DIR = Path(APP_DIR / "lyrics")
 LOG_DIR = Path(APP_DIR / "logs")
 
+
+
 @dataclass
 class Setting:
     """All the settings of the app"""
