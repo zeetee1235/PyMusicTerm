@@ -178,15 +178,15 @@ wheels = [
 
 [[package]]
 name = "loguru"
-version = "0.7.3"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
     { name = "win32-setctime", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3a/05/a1dae3dffd1116099471c643b8924f5aa6524411dc6c63fdae648c4f1aca/loguru-0.7.3.tar.gz", hash = "sha256:19480589e77d47b8d85b2c827ad95d49bf31b0dcde16593892eb51dd18706eb6", size = 63559 }
+sdist = { url = "https://files.pythonhosted.org/packages/75/1f/d3818863e4be96bd641c4643c535a98f0fa2a12efa7c8ba35f763fa778ee/loguru-0.6.0.tar.gz", hash = "sha256:066bd06758d0a513e9836fd9c6b5a75bfb3fd36841f4b996bc60b547a309d41c", size = 123158 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0c/29/0348de65b8cc732daa3e33e67806420b2ae89bdce2b04af740289c5c6c8c/loguru-0.7.3-py3-none-any.whl", hash = "sha256:31a33c10c8e1e10422bfd431aeb5d351c7cf7fa671e3c4df004162264b28220c", size = 61595 },
+    { url = "https://files.pythonhosted.org/packages/fe/21/e1d1da2586865a159fc73b611f36bdd50b6c4043cb6132d3d5e972988028/loguru-0.6.0-py3-none-any.whl", hash = "sha256:4e2414d534a2ab57573365b3e6d0234dfb1d84b68b7f3b948e6fb743860a77c3", size = 58317 },
 ]
 
 [[package]]
@@ -293,10 +293,10 @@ requires-dist = [
     { name = "ffmpeg", specifier = ">=1.4" },
     { name = "humanize", specifier = ">=4.12.1" },
     { name = "just-playback", specifier = ">=0.1.8" },
-    { name = "loguru", specifier = ">=0.7.3" },
+    { name = "loguru", specifier = ">=0.6.0" },
     { name = "mpris-server", marker = "sys_platform != 'win32'", specifier = ">=0.9.0" },
     { name = "msgspec", specifier = ">=0.19.0" },
-    { name = "notify-py", specifier = ">=0.3.2" },
+    { name = "notify-py", git = "https://github.com/ms7m/notify-py.git" },
     { name = "pydub", specifier = ">=0.25.1" },
     { name = "pytubefix", specifier = ">=8.12.1" },
     { name = "textual", specifier = ">=1.0.0" },
@@ -307,15 +307,11 @@ requires-dist = [
 
 [[package]]
 name = "notify-py"
-version = "0.3.2"
-source = { registry = "https://pypi.org/simple" }
+version = "0.3.42"
+source = { git = "https://github.com/ms7m/notify-py.git#67dacb8d6aaf58288edf18426e540b085ec7b8a1" }
 dependencies = [
     { name = "jeepney", marker = "sys_platform == 'linux'" },
     { name = "loguru" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c0/91/81806bcf65c834f0f5469c6b1a7b593d1c4898d5f5ea00273a0fe7e6cda3/notify_py-0.3.2.tar.gz", hash = "sha256:016b54d20dff55713dce5428d6f6314d3a7e3e6d7d00a57c45ce813534e34a4e", size = 647706 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ed/44/1f4abc7755b4b75dce32a1a184c43bf0580b92f27b035198f885b18d5d1d/notify_py-0.3.2-py3-none-any.whl", hash = "sha256:bcf4a15582a61cab9b7eb6cb1b76c1a395e8eac6e34216d8612df68ef21c886b", size = 649922 },
 ]
 
 [[package]]

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from msgspec import toml
 import os
+import http.client as httplib
+from typing import Callable
 
 # Define constants for paths
 HOME = Path.home()
@@ -13,10 +15,10 @@ LYRICS_DIR = Path(APP_DIR / "lyrics")
 LOG_DIR = Path(APP_DIR / "logs")
 
 
-
 @dataclass
 class Setting:
     """All the settings of the app"""
+
     volume: float = 1.0
     loop: bool = False
     app_dir: str = str(APP_DIR)
@@ -25,6 +27,7 @@ class Setting:
     playlist_dir: str = str(PLAYLIST_DIR)
     lyrics_dir: str = str(LYRICS_DIR)
     log_dir: str = str(LOG_DIR)
+
 
 class SettingManager:
     """Manages the settings of the app."""
@@ -51,27 +54,27 @@ class SettingManager:
     def loop(self, value: bool) -> None:
         self._setting.loop = value
         self.save_setting()
-    
+
     @property
     def app_dir(self) -> str:
         return self._setting.app_dir
-    
+
     @property
     def music_dir(self) -> str:
         return self._setting.music_dir
-    
+
     @property
     def setting_file(self) -> str:
         return self._setting.setting_file
-    
+
     @property
     def playlist_dir(self) -> str:
         return self._setting.playlist_dir
-    
+
     @property
     def lyrics_dir(self) -> str:
         return self._setting.lyrics_dir
-    
+
     @property
     def log_dir(self) -> str:
         return self._setting.log_dir
@@ -81,7 +84,7 @@ class SettingManager:
         if not SETTING_FILE.exists():
             self._setting = Setting()
             self.save_setting()
-        
+
         try:
             with open(SETTING_FILE, "rb") as f:
                 return toml.decode(f.read(), type=Setting)
@@ -107,7 +110,6 @@ class SettingManager:
         LOG_DIR.mkdir(exist_ok=True)
 
 
-
 @dataclass
 class KeyBinding:
     """All the keybindings of the app"""
@@ -117,7 +119,6 @@ class KeyBinding:
     seek_back: str = "q"
     seek_forward: str = "d"
     play_pause: str = "s"
-
 
 
 def rename_console(name: str) -> None:
@@ -130,3 +131,13 @@ def rename_console(name: str) -> None:
         os.system(f"title {name}")
     else:
         print(f"\33]0;{name}\a", end="", flush=True)
+
+
+def have_internet(self) -> bool:
+    """Check if the user has internet connection"""
+    conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
+    try:
+        with conn.request("HEAD", "/"):
+            return True
+    except Exception:
+        return False

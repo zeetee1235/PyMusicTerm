@@ -4,8 +4,10 @@ from just_playback import Playback
 class InvalidFileType(Exception):
     pass
 
+
 class Singleton(type):
     _instances = {}
+
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
@@ -35,7 +37,7 @@ class MusicPlayer(metaclass=Singleton):
 
     def pause_song(self) -> None:
         self.playback.pause()
-    
+
     def play_pause(self) -> None:
         if self.playback.playing:
             self.pause_song()
