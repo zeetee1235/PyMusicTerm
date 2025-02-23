@@ -31,6 +31,14 @@ else:
 from setting import SettingManager, rename_console
 
 
+# TODO : rendre plus maintenable le code existnant en refactorisant
+# TODO : renomer les fonctions pour qu'elles soient plus explicites, et pareil pour les id et classes des widgets
+# TODO : ajouter des commentaires pour expliquer le code
+# TODO : ajouter des tests unitaires
+# TODO : améliorer le queuing systeme
+# TODO : ajouter des raccourcis clavier modifiables
+
+
 def format_time(time: float) -> str:
     """Format the time to a string"""
     return str(timedelta(seconds=int(time))).removeprefix("0:")
