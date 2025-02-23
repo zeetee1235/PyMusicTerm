@@ -1,5 +1,4 @@
 import ytmusicapi
-from ytmusicapi.exceptions import YTMusicError
 from dataclasses import dataclass
 from typing import Protocol
 import ytmusicapi.exceptions

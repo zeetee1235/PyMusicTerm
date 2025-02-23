@@ -27,3 +27,12 @@ Rule {
 .player_status {
     align: center bottom;
 }
+
+.info_controls {
+    text-align: center;
+    align: center bottom;
+
+    .label{
+        text-overflow: ellipsis;
+    }
+}

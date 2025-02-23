@@ -94,6 +94,9 @@ class PyMusicTerm(App):
                         show_table_of_contents=False,
                     )
         yield Rule()
+        with Vertical(classes="info_controls"):
+            yield Label("Unknown Title", id="label_current_song_title")
+            yield Label("Unknown Artist", id="label_current_song_artist")
         with Horizontal(classes="status_controls"):
             yield Label(
                 "--:--", id="label_current_song_position", classes="control_label"
@@ -143,6 +146,23 @@ class PyMusicTerm(App):
         current_float = self.player.position
         label_current_song_position.update(format_time(current_float))
         label_song_length.update(format_time(length_float))
+        if self.player.playing:
+            label_current_song_title: Label = self.query_one(
+                "#label_current_song_title"
+            )
+            label_current_song_artist: Label = self.query_one(
+                "#label_current_song_artist"
+            )
+            label_current_song_title.update(
+                Path(
+                    self.player.list_of_downloaded_songs[self.player.current_song_index]
+                ).stem.split(" - ")[0]
+            )
+            label_current_song_artist.update(
+                Path(
+                    self.player.list_of_downloaded_songs[self.player.current_song_index]
+                ).stem.split(" - ")[1]
+            )
         try:
             percentage = current_float / length_float
         except ZeroDivisionError:
@@ -158,11 +178,6 @@ class PyMusicTerm(App):
         current_lyric = self.player.dict_of_lyrics[
             self.player.list_of_downloaded_songs[self.player.current_song_index]
         ]
-        logger.warning(current_lyric)
-        logger.warning(self.player.dict_of_lyrics)
-        logger.warning(
-            self.player.list_of_downloaded_songs[self.player.current_song_index]
-        )
         with open(current_lyric, "r", encoding="utf-8") as f:
             lyrics_results.document.update(f.read())
 

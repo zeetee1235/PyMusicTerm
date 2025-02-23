@@ -13,14 +13,17 @@ dependencies = [
     "textual>=1.0.0",
     "tomli-w>=1.2.0",
     "ytmusicapi>=1.10.1",
-    "loguru>=0.7.3",
+    "loguru>=0.6.0",
     "ffmpeg>=1.4",
     "humanize>=4.12.1",
     "mpris-server>=0.9.0; sys_platform != 'win32'",
     "win11toast>=0.35; sys_platform == 'win32'",
-    "notify-py>=0.3.2",
+    "notify-py",
 ]
 
 [project.urls]
 Homepage = "https://github.com/ZachVFXX/PyMusicTerm"
 Issues = "https://github.com/ZachVFXX/PyMusicTerm/issues"
+
+[tool.uv.sources]
+notify-py = { git = "https://github.com/ms7m/notify-py.git" }

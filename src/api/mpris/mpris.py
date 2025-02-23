@@ -5,6 +5,7 @@ from mpris_server.adapters import PlayState, MprisAdapter
 from mpris_server.base import URI, MIME_TYPES
 import sys
 
+
 class PyMusicTermPlayer(Protocol):
     position: float
     current_song_index: int
@@ -12,6 +13,7 @@ class PyMusicTermPlayer(Protocol):
     playing: bool
     list_of_downloaded_songs: list[str]
     dict_of_lyrics: dict[str, str]
+
     def query(self, query: str, filter: str) -> list: ...
     def play_from_ytb(self, video_id: str) -> None: ...
     def play_from_list(self, id: int) -> None: ...
@@ -25,7 +27,6 @@ class PyMusicTermPlayer(Protocol):
     def stop(self) -> None: ...
     def pause_song(self) -> None: ...
     def resume_song(self) -> None: ...
-    
 
 
 class HAdapter(MprisAdapter):
@@ -129,9 +130,6 @@ class HAdapter(MprisAdapter):
 
     def can_control(self) -> bool:
         return True
-
-    def get_stream_title(self) -> str:
-        return "Test title"
 
     def metadata(self) -> dict:
         song_data = Path(
