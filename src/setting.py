@@ -3,9 +3,7 @@ from pathlib import Path
 from msgspec import toml
 import os
 import http.client as httplib
-from typing import Callable
 
-# Define constants for paths
 HOME = Path.home()
 APP_DIR = Path(HOME / ".pymusicterm")
 MUSIC_DIR = Path(APP_DIR / "musics")

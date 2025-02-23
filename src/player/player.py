@@ -75,7 +75,7 @@ class PyMusicTermPlayer:
         self.music_player.play_song()
         self.media_control.on_playback()
 
-    def previous(self) -> None:
+    def previous(self) -> int:
         """Play the previous song"""
         if self.current_song_index == 0:
             self.current_song_index = len(self.list_of_downloaded_songs) - 1
@@ -86,8 +86,9 @@ class PyMusicTermPlayer:
         )
         self.music_player.play_song()
         self.media_control.on_playback()
+        return self.current_song_index
 
-    def next(self) -> None:
+    def next(self) -> int:
         """Play the next song"""
         if self.current_song_index == len(self.list_of_downloaded_songs) - 1:
             self.current_song_index = 0
@@ -98,6 +99,7 @@ class PyMusicTermPlayer:
         )
         self.music_player.play_song()
         self.media_control.on_playback()
+        return self.current_song_index
 
     def seek(self, time: float = 10) -> None:
         """Seek forward or backward

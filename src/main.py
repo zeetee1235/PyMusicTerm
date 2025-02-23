@@ -11,12 +11,11 @@ from textual.widgets import (
     TabPane,
     Rule,
     Select,
-    Footer,
     MarkdownViewer,
     ProgressBar,
 )
 from textual.widgets.option_list import Option
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, Center
 from textual import on
 from pathlib import Path
 from datetime import timedelta
@@ -60,6 +59,7 @@ class PyMusicTerm(App):
             Path(self.setting.log_dir + "/pymusicterm.log"),
             format="{time} {level} {message}",
             level="INFO",
+            rotation="500 MB",
         )
         self.timer: Widget | None = None
         self.media_control = MediaControl()
@@ -67,7 +67,6 @@ class PyMusicTerm(App):
         self.media_control.init(self.player)
 
     def compose(self) -> ComposeResult:
-        yield Footer()
         with TabbedContent(classes="search_tabs", id="tabbed_content"):
             with TabPane("Search", id="search"):
                 with Vertical():
@@ -95,8 +94,10 @@ class PyMusicTerm(App):
                     )
         yield Rule()
         with Vertical(classes="info_controls"):
-            yield Label("Unknown Title", id="label_current_song_title")
-            yield Label("Unknown Artist", id="label_current_song_artist")
+            with Center():
+                yield Label("Unknown Title", id="label_current_song_title")
+            with Center():
+                yield Label("Unknown Artist", id="label_current_song_artist")
         with Horizontal(classes="status_controls"):
             yield Label(
                 "--:--", id="label_current_song_position", classes="control_label"
@@ -208,7 +209,8 @@ class PyMusicTerm(App):
     @on(Button.Pressed, "#previous")
     def action_previous(self) -> None:
         """Play the previous song"""
-        self.player.previous()
+        playlist_results: OptionList = self.query_one("#playlist_results")
+        playlist_results.highlighted = self.player.previous()
 
     @on(Button.Pressed, "#play_pause")
     def action_play(self) -> None:
@@ -232,7 +234,8 @@ class PyMusicTerm(App):
     @on(Button.Pressed, "#next")
     def action_next(self) -> None:
         """Play the next song"""
-        self.player.next()
+        playlist_results: OptionList = self.query_one("#playlist_results")
+        playlist_results.highlighted = self.player.next()
 
     @on(Button.Pressed, "#shuffle")
     def action_shuffle(self) -> None:
