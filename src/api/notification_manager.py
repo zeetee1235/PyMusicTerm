@@ -5,8 +5,7 @@ from pathlib import Path
 
 class NotificationManager:
     def __init__(self, app_name: str = "PyMusicTerm") -> None:
-        self.notification = Notify()
-        self.notification.application_name = app_name
+        self.notification = Notify(default_notification_application_name=app_name)
         try:
             path = Path("/home/zach/Dev/PyMusicTerm/src/assets/icon.png")
             print(path)

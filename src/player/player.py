@@ -53,6 +53,8 @@ class PyMusicTermPlayer:
         """
         song = self.dict_of_song_result[video_id]
         path = self.downloader.download(song)
+        if path is None:
+            return
         self.ytm.get_lyrics(song)
         self.list_of_downloaded_songs = fetch_songs_from_folder(self.setting.music_dir)
         self.list_of_lyrics = self.map_lyrics_to_song()

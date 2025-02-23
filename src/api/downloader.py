@@ -4,6 +4,8 @@ from pydub import AudioSegment
 from pathlib import Path
 from api.notification_manager import NotificationManager
 
+from setting import have_internet
+
 
 class SongData(Protocol):
     title: str
@@ -40,6 +42,17 @@ class Downloader:
             f"Downloading {song.title} - {song.get_formatted_artists()}",
             "Starting download - 1/4",
         )
+        if not have_internet():
+            self.notification.send_notification(
+                "No internet connection",
+                "Please connect to the internet to download songs.",
+            )
+            return None
+
+        self.notification.send_notification(
+            f"Downloading {song.title} - {song.get_formatted_artists()}",
+            "Starting download - 1/4",
+        )
         yt_path = self._download_from_yt(song)
 
         self.notification.send_notification(
@@ -69,6 +82,7 @@ class Downloader:
         Returns:
             path (str): The path of the downloaded file or None if the download failed
         """
+
         yt = YouTube(
             f"https://www.youtube.com/watch?v={song.videoId}",
             on_progress_callback=self.on_progress,
