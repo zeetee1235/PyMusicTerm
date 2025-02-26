@@ -4,8 +4,6 @@ from pydub import AudioSegment
 from pathlib import Path
 from api.notification_manager import NotificationManager
 
-from setting import have_internet
-
 
 class SongData(Protocol):
     title: str
@@ -42,18 +40,14 @@ class Downloader:
             f"Downloading {song.title} - {song.get_formatted_artists()}",
             "Starting download - 1/4",
         )
-        if not have_internet():
+        try:
+            yt_path = self._download_from_yt(song)
+        except Exception as e:
             self.notification.send_notification(
-                "No internet connection",
-                "Please connect to the internet to download songs.",
+                f"Downloading {song.title} - {song.get_formatted_artists()}",
+                f"Error downloading song: {e}",
             )
             return None
-
-        self.notification.send_notification(
-            f"Downloading {song.title} - {song.get_formatted_artists()}",
-            "Starting download - 1/4",
-        )
-        yt_path = self._download_from_yt(song)
 
         self.notification.send_notification(
             f"Downloading {self.song.title} - {self.song.get_formatted_artists()}",
@@ -93,17 +87,22 @@ class Downloader:
         )
 
     def _convert_to_mp3(self, path: str) -> str:
-        """Convert a m4a file to mp3
+        """Convert an audio file to mp3
 
         Args:
-            path (str): path to the m4a file
+            path (str): path to the downloanded AUDIO file
 
         Returns:
             str: path to the mp3 file
         """
+
+        if not isinstance(path, str):
+            raise TypeError(f"path must be a string, not {type(path)}")
+        extention = Path(path).suffix
+        new_path = path.replace(extention, ".mp3")
         audio = AudioSegment.from_file(path)
-        audio.export(path.replace(".m4a", ".mp3"), format="mp3")
-        return path.replace(".m4a", ".mp3")
+        audio.export(new_path, format="mp3")
+        return new_path
 
     def _delete_file(self, path: str) -> None:
         """Delete a file

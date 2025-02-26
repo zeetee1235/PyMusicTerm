@@ -3,6 +3,7 @@ from pathlib import Path
 from msgspec import toml
 import os
 import http.client as httplib
+import sys
 
 HOME = Path.home()
 APP_DIR = Path(HOME / ".pymusicterm")
@@ -11,6 +12,12 @@ SETTING_FILE = Path(APP_DIR / "setting.toml")
 PLAYLIST_DIR = Path(APP_DIR / "playlists")
 LYRICS_DIR = Path(APP_DIR / "lyrics")
 LOG_DIR = Path(APP_DIR / "logs")
+
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
 
 @dataclass
@@ -123,15 +130,17 @@ def rename_console(name: str) -> None:
     """Rename the console
 
     Args:
-        name (str): The new name of the console
+        name (str): The new name of the console (for linux and windows)
     """
+    if not isinstance(name, str):
+        raise TypeError(f"name must be a string, not {type(name)}")
     if os.name == "nt":
         os.system(f"title {name}")
     else:
         print(f"\33]0;{name}\a", end="", flush=True)
 
 
-def have_internet(self) -> bool:
+def have_internet() -> bool:
     """Check if the user has internet connection"""
     conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
     try:

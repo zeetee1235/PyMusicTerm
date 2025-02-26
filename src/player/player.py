@@ -38,6 +38,7 @@ class PyMusicTermPlayer:
         Returns:
             list[SearchSongResult | SearchVideoResult]: the list of the results found
         """
+
         result = self.ytm.search(query, filter)
 
         self.dict_of_song_result.clear()
@@ -46,10 +47,10 @@ class PyMusicTermPlayer:
         return result
 
     def play_from_ytb(self, video_id: str) -> None:
-        """Play a song from the list of results
+        """Play a song from the YTMusic API, it will download the song first then play it
 
         Args:
-            id (int): the index of the song to play
+            video_id (int): the video id of the song to play
         """
         song = self.dict_of_song_result[video_id]
         path = self.downloader.download(song)
@@ -67,7 +68,12 @@ class PyMusicTermPlayer:
 
         Args:
             id (int): the index of the song to play
+
+        Raises:
+            TypeError: If id is not an integer
         """
+        if not isinstance(id, int):
+            raise TypeError(f"id must be an integer, not {type(id)}")
         self.current_song_index = id
         self.list_of_downloaded_songs = fetch_songs_from_folder(self.setting.music_dir)
         self.list_of_lyrics = self.map_lyrics_to_song()
@@ -101,13 +107,20 @@ class PyMusicTermPlayer:
         self.media_control.on_playback()
         return self.current_song_index
 
-    def seek(self, time: float = 10) -> None:
+    def seek(self, seconds: float = 10) -> None:
         """Seek forward or backward
 
         Args:
             time (float, optional): The time to seek in seconds. Defaults to 10.
+
+        Raises:
+            TypeError: If seconds is not an integer or a float
         """
-        self.music_player.position += time
+        if not isinstance(seconds, (int, float)):
+            raise TypeError(
+                f"Seconds must be an integer or a float, not {type(seconds)}"
+            )
+        self.music_player.position += seconds
 
     def suffle(self) -> None:
         """Shuffle the list of downloaded songs"""

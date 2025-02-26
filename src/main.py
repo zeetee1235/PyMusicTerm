@@ -24,7 +24,7 @@ from textual.worker import get_current_worker
 from loguru import logger
 import sys
 
-if sys.platform == "win32":
+if sys.platform != "win32":
     from player.media_control import MediaControlWin32 as MediaControl
 else:
     from player.media_control import MediaControlMPRIS as MediaControl
@@ -33,15 +33,32 @@ from setting import SettingManager, rename_console
 
 # TODO : rendre plus maintenable le code existnant en refactorisant
 # TODO : renomer les fonctions pour qu'elles soient plus explicites, et pareil pour les id et classes des widgets
-# TODO : ajouter des commentaires pour expliquer le code
 # TODO : ajouter des tests unitaires
 # TODO : améliorer le queuing systeme
 # TODO : ajouter des raccourcis clavier modifiables
+# TODO : AJOUTER Type validation (raise error) --- 50%
+# TODO : ajouter des logs messages
 
 
-def format_time(time: float) -> str:
-    """Format the time to a string"""
-    return str(timedelta(seconds=int(time))).removeprefix("0:")
+def format_time(seconds: int | float) -> str:
+    """Format the time to a string (ex: 90s -> 01:30)
+
+    Args:
+        seconds (int | float): The time in secondes
+
+    Raises:
+        TypeError: If the type of the seconds is not int or float
+
+    Returns:
+        str: The string representation of the time
+    """
+    if not isinstance(seconds, (float, int)):
+        raise TypeError(
+            f"Invalid type for time for {type(seconds)}, please use int or float"
+        )
+    if isinstance(seconds, float):
+        seconds = int(seconds)
+    return str(timedelta(seconds=seconds)).removeprefix("0:")
 
 
 class PyMusicTerm(App):
@@ -308,9 +325,9 @@ class PyMusicTerm(App):
         """Seek forward 10 seconds"""
         self.player.seek(10)
 
-    def action_volume(self, value: float) -> None:
+    def action_volume(self, volume: float) -> None:
         """Increase the volume"""
-        self.player.volume(value)
+        self.player.volume(volume)
 
 
 def main():

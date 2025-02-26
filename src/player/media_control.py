@@ -2,7 +2,7 @@ import sys
 from typing import Protocol
 
 
-if sys.platform == "win32":
+if sys.platform != "win32":
     pass
 else:
     from mpris_server import EventAdapter
@@ -37,7 +37,7 @@ class MediaControlWin32(MediaControl):
 class MediaControlMPRIS(MediaControl):
     def __init__(self) -> None:
         self.adapter = HAdapter()
-        self.mpris = Server("PyMusicTerm", adapter=self.adapter)
+        self.mpris = Server(name="PyMusicTerm", adapter=self.adapter)
         self.event = EventAdapter(root=self.mpris.root, player=self.mpris.player)
 
     def init(self, player):

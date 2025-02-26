@@ -53,9 +53,18 @@ class YTMusic:
         Args:
             query (str): The query to search for
             filter (str, optional): The filter to use. Defaults to "songs".
+
+        Raises:
+            TypeError: If query or filter is not a string
+
         Returns:
             list[Song]: The list of songs found
         """
+        if not isinstance(query, str):
+            raise TypeError(f"query must be a string, not {type(query)}")
+        if not isinstance(filter, str):
+            raise TypeError("filter must be a string, not {type(filter)}")
+
         results = self.client.search(query, filter)
         return [
             SearchResult(
