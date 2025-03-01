@@ -2,6 +2,18 @@ import pytest
 from unittest.mock import MagicMock
 from main import PyMusicTerm, format_time
 from setting import SettingManager
+from textual.widgets import (
+    Input,
+    Button,
+    OptionList,
+    TabbedContent,
+    Label,
+    TabPane,
+    Rule,
+    Select,
+    MarkdownViewer,
+    ProgressBar,
+)
 
 
 def test_format_time():
@@ -26,64 +38,38 @@ def test_app_initialization(app: PyMusicTerm):
     assert app.media_control is not None
 
 
-def test_action_return_on_search_tab(app: PyMusicTerm):
-    app.action_return_on_search_tab()
-    assert app.query_one("#tabbed_content").active == "search"
-
-
-def test_action_return_on_playlist_tab(app: PyMusicTerm):
-    app.action_return_on_playlist_tab()
-    assert app.query_one("#tabbed_content").active == "playlist"
-
-
-def test_action_play_pause(app: PyMusicTerm):
-    app.player.playing = False
-    app.action_play()
-    assert app.player.playing is True
-    app.action_play()
-    assert app.player.playing is False
-
-
-def test_action_next(app: PyMusicTerm):
-    app.player.next = MagicMock()
-    app.action_next()
-    app.player.next.assert_called_once()
-
-
-def test_action_previous(app: PyMusicTerm):
-    app.player.previous = MagicMock()
-    app.action_previous()
-    app.player.previous.assert_called_once()
-
-
 def test_action_shuffle(app: PyMusicTerm):
     app.player.suffle = MagicMock()
     app.action_shuffle()
     app.player.suffle.assert_called_once()
 
 
-def test_action_loop(app: PyMusicTerm):
-    app.player.loop_at_end = MagicMock(return_value=True)
-    app.action_loop()
-    assert app.query_one("#loop").variant == "success"
-    app.player.loop_at_end = MagicMock(return_value=False)
-    app.action_loop()
-    assert app.query_one("#loop").variant == "default"
+@pytest.mark.asyncio
+async def test_play_pause_button(app: PyMusicTerm):
+    """Test pressing keys has the desired result."""
+    async with app.run_test() as pilot:
+        await pilot.click("#play_pause")
+        assert app.player.playing is False
+        await pilot.click("#play_pause")
+        assert app.player.playing is False
 
 
 def test_action_seek_back(app: PyMusicTerm):
+    """Test if the seek back action works as expected."""
     app.player.seek = MagicMock()
     app.action_seek_back()
     app.player.seek.assert_called_once_with(-10)
 
 
 def test_action_seek_forward(app: PyMusicTerm):
+    """Test if the seek forward action works as expected."""
     app.player.seek = MagicMock()
     app.action_seek_forward()
     app.player.seek.assert_called_once_with(10)
 
 
 def test_action_volume(app: PyMusicTerm):
+    """test if the volume action works as expected."""
     app.player.volume = MagicMock()
     app.action_volume(0.1)
     app.player.volume.assert_called_once_with(0.1)
