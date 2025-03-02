@@ -24,20 +24,15 @@ class Server(Protocol):
 
 
 class MediaControlWin32(MediaControl):
-    def __init__(self) -> None:
-        print("Win32")
+    def __init__(self) -> None: ...
 
-    def init(self, player) -> None:
-        print("Win32")
+    def init(self, player) -> None: ...
 
-    def on_playback(self) -> None:
-        print("Win32")
+    def on_playback(self) -> None: ...
 
-    def on_playpause(self) -> None:
-        print("Win32")
+    def on_playpause(self) -> None: ...
 
-    def on_volume(self) -> None:
-        print("Win32")
+    def on_volume(self) -> None: ...
 
 
 class MediaControlMPRIS(MediaControl):

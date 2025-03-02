@@ -141,8 +141,8 @@ class PyMusicTermPlayer:
         self.setting.loop = self.music_player.loop_at_end
         return self.music_player.loop_at_end
 
-    def update(self) -> None:
-        """Update the player"""
+    def check_if_song_ended(self) -> None:
+        """Check if the song has ended and play the next song or loop it"""
         if self.music_player.loop_at_end:
             return
         if self.music_player.position == 0 and not self.music_player.playing:

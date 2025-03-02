@@ -197,7 +197,7 @@ class PyMusicTerm(App):
         progress_bar.update(
             progress=percentage * 100,
         )
-        self.player.update()
+        self.player.check_if_song_ended()
         lyrics_results: MarkdownViewer = self.query_one("#lyrics_results")
         if not self.player.playing:
             return
