@@ -2,18 +2,7 @@ import pytest
 from unittest.mock import MagicMock
 from main import PyMusicTerm, format_time
 from setting import SettingManager
-from textual.widgets import (
-    Input,
-    Button,
-    OptionList,
-    TabbedContent,
-    Label,
-    TabPane,
-    Rule,
-    Select,
-    MarkdownViewer,
-    ProgressBar,
-)
+from textual.widgets import OptionList
 
 
 def test_format_time():
@@ -28,6 +17,7 @@ def test_format_time():
 @pytest.fixture
 def app() -> PyMusicTerm:
     setting = SettingManager()
+    setting.os = "win32"
     app = PyMusicTerm(setting)
     return app
 
@@ -38,16 +28,22 @@ def test_app_initialization(app: PyMusicTerm):
     assert app.media_control is not None
 
 
-def test_action_shuffle(app: PyMusicTerm):
-    app.player.suffle = MagicMock()
-    app.action_shuffle()
-    app.player.suffle.assert_called_once()
+@pytest.mark.asyncio
+async def test_action_shuffle(app: PyMusicTerm):
+    async with app.run_test() as pilot:
+        await pilot.click("#playlist")
+        playlist_results: OptionList = app.query_one("#playlist_results")
+        previous_results = list(playlist_results.options)
+        app.action_shuffle()
+        assert previous_results != list(playlist_results.options)
 
 
 @pytest.mark.asyncio
 async def test_play_pause_button(app: PyMusicTerm):
     """Test pressing keys has the desired result."""
     async with app.run_test() as pilot:
+        await pilot.click("#playlist")
+        await pilot.click("#playlist_results")
         await pilot.click("#play_pause")
         assert app.player.playing is False
         await pilot.click("#play_pause")

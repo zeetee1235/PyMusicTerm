@@ -27,6 +27,7 @@ class PyMusicTermPlayer:
         self.dict_of_lyrics: dict[str, str] = self.map_lyrics_to_song()
         self.dict_of_song_result: dict[str, SearchResult] = {}
         self.current_song_index = 0
+        self.current_song: str | None = None
 
     def query(self, query: str, filter: str) -> list[SearchResult]:
         """Query the YTMusic API for a song
@@ -57,6 +58,7 @@ class PyMusicTermPlayer:
         if path is None:
             return
         self.ytm.get_lyrics(song)
+        # BUG: dont re-fetch the songs but add it to the list
         self.list_of_downloaded_songs = fetch_songs_from_folder(self.setting.music_dir)
         self.list_of_lyrics = self.map_lyrics_to_song()
         self.music_player.load_song(str(path))
@@ -75,8 +77,7 @@ class PyMusicTermPlayer:
         if not isinstance(id, int):
             raise TypeError(f"id must be an integer, not {type(id)}")
         self.current_song_index = id
-        self.list_of_downloaded_songs = fetch_songs_from_folder(self.setting.music_dir)
-        self.list_of_lyrics = self.map_lyrics_to_song()
+        self.current_song = self.list_of_downloaded_songs[id]
         self.music_player.load_song(self.list_of_downloaded_songs[id])
         self.music_player.play_song()
         self.media_control.on_playback()
@@ -100,6 +101,7 @@ class PyMusicTermPlayer:
             self.current_song_index = 0
         else:
             self.current_song_index += 1
+        self.current_song = self.list_of_downloaded_songs[self.current_song_index]
         self.music_player.load_song(
             self.list_of_downloaded_songs[self.current_song_index]
         )
@@ -125,6 +127,13 @@ class PyMusicTermPlayer:
     def suffle(self) -> None:
         """Shuffle the list of downloaded songs"""
         shuffle(self.list_of_downloaded_songs)
+        if self.current_song is not None:
+            self.current_song_index = self.list_of_downloaded_songs.index(
+                self.current_song
+            )
+        else:
+            self.current_song_index = 0
+            self.current_song = self.list_of_downloaded_songs[self.current_song_index]
 
     def loop_at_end(self) -> bool:
         """Loop at the end"""

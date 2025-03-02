@@ -26,6 +26,7 @@ class Setting:
 
     volume: float = 1.0
     loop: bool = False
+    os: str = sys.platform
     app_dir: str = str(APP_DIR)
     music_dir: str = str(MUSIC_DIR)
     setting_file: str = str(SETTING_FILE)
@@ -43,12 +44,21 @@ class SettingManager:
         self._setting = self.load_setting()
 
     @property
+    def os(self) -> str:
+        return self._setting.os
+
+    @os.setter
+    def os(self, value: str) -> None:
+        self._setting.os = value
+        self.save_setting()
+
+    @property
     def volume(self) -> float:
         return self._setting.volume
 
     @volume.setter
     def volume(self, value: float) -> None:
-        self._setting.volume = value
+        self._setting.volume = round(value, 3)
         self.save_setting()
 
     @property

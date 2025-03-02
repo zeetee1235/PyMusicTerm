@@ -4,12 +4,10 @@
 
 .status_controls {
     align: center middle;
-    padding: 0;
-    margin: 0;
 }
 
 .player_controls {
-    padding: 0;
+    padding: 0 0;
     align: center middle;
 }
 
@@ -25,5 +23,6 @@ Rule {
 }
 
 .player_status {
+    padding: 0 0;
     align: center bottom;
 }

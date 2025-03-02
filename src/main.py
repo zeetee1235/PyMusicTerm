@@ -22,12 +22,7 @@ from datetime import timedelta
 from textual import work
 from textual.worker import get_current_worker
 from loguru import logger
-import sys
 
-if sys.platform != "win32":
-    from player.media_control import MediaControlWin32 as MediaControl
-else:
-    from player.media_control import MediaControlMPRIS as MediaControl
 from setting import SettingManager, rename_console
 
 
@@ -52,7 +47,7 @@ def format_time(seconds: int | float) -> str:
     Returns:
         str: The string representation of the time
     """
-    if not isinstance(seconds, (float, int)):
+    if not isinstance(seconds, (int, float)):
         raise TypeError(
             f"Invalid type for time for {type(seconds)}, please use int or float"
         )
@@ -70,7 +65,8 @@ class PyMusicTerm(App):
         ("l", "loop", "Loop at the end"),
         ("&", "return_on_search_tab", "Go to the search tab"),
         ("é", "return_on_playlist_tab", "Go to the playlist tab"),
-        ("j", "volume(-0.1)", "Volume down"),
+        ('"', "return_on_lyrics_tab", "Go to the lyrics tab"),
+        ("j", "volume(-0.01)", "Volume down"),
         ("k", "volume(0.01)", "Volume up"),
     ]
 
@@ -87,6 +83,12 @@ class PyMusicTerm(App):
             rotation="500 MB",
         )
         self.timer: Widget | None = None
+
+        if self.setting.os == "win32":
+            from player.media_control import MediaControlWin32 as MediaControl
+        else:
+            from player.media_control import MediaControlMPRIS as MediaControl
+
         self.media_control = MediaControl()
         self.player = PyMusicTermPlayer(self.setting, self.media_control)
         self.media_control.init(self.player)
@@ -159,7 +161,6 @@ class PyMusicTerm(App):
                         id=i,
                     )
                 )
-            return
 
     def update_time(self) -> None:
         """Update the time label of the player, and update the player"""
@@ -217,6 +218,11 @@ class PyMusicTerm(App):
         tab: TabbedContent = self.query_one("#tabbed_content")
         tab.active = "playlist"
 
+    def action_return_on_lyrics_tab(self):
+        """Set the lyrics tab as the active tab"""
+        tab: TabbedContent = self.query_one("#tabbed_content")
+        tab.active = "lyrics"
+
     @on(OptionList.OptionSelected, "#playlist_results")
     def select_playlist_result(self, event: OptionList.OptionSelected) -> None:
         """Select a song from the playlist results and play it"""
@@ -266,6 +272,15 @@ class PyMusicTerm(App):
     def action_shuffle(self) -> None:
         """Shuffle the list of downloaded songs"""
         self.player.suffle()
+        playlist_results: OptionList = self.query_one("#playlist_results")
+        playlist_results.clear_options()
+        for i, song in enumerate(self.player.list_of_downloaded_songs):
+            playlist_results.add_option(
+                Option(
+                    f"{i + 1}. {Path(song).stem}",
+                    id=i,
+                )
+            )
 
     @on(Button.Pressed, "#loop")
     def action_loop(self) -> None:
@@ -328,8 +343,10 @@ class PyMusicTerm(App):
     def action_volume(self, volume: float) -> None:
         """Increase the volume"""
         self.player.volume(volume)
+        self.notify(f"Volume changed to {self.player.music_player.volume:.2f}")
 
 
+@logger.catch
 def main():
     setting = SettingManager()
     app = PyMusicTerm(setting)

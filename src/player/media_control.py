@@ -1,8 +1,9 @@
-import sys
 from typing import Protocol
 
+from setting import SettingManager
 
-if sys.platform != "win32":
+setting = SettingManager()
+if setting.os == "win32":
     pass
 else:
     from mpris_server import EventAdapter
@@ -15,6 +16,11 @@ class MediaControl(Protocol):
     def on_playback(self) -> None: ...
     def on_playpause(self) -> None: ...
     def on_volume(self) -> None: ...
+
+
+class Server(Protocol):
+    root: str
+    player: str
 
 
 class MediaControlWin32(MediaControl):
