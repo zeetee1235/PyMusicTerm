@@ -1,10 +1,9 @@
 from pathlib import Path
 from api.ytmusic import SearchResult, YTMusic
-from api.player import MusicPlayer
+from api.music_player import MusicPlayer
 from api.downloader import Downloader
 from player.media_control import MediaControl
-from setting import SettingManager
-from api.local import fetch_songs_from_folder
+from setting import SettingManager, fetch_files_from_folder
 from random import shuffle
 from api.lyrics import LyricsDownloader
 
@@ -21,8 +20,8 @@ class PyMusicTermPlayer:
         lyrics = LyricsDownloader(self.setting.lyrics_dir)
         self.ytm = YTMusic(lyrics)
         self.downloader = Downloader(self.setting.music_dir)
-        self.list_of_downloaded_songs: list[str] = fetch_songs_from_folder(
-            self.setting.music_dir
+        self.list_of_downloaded_songs: list[str] = fetch_files_from_folder(
+            self.setting.music_dir, "mp3"
         )
         self.dict_of_lyrics: dict[str, str] = self.map_lyrics_to_song()
         self.dict_of_song_result: dict[str, SearchResult] = {}
@@ -59,7 +58,7 @@ class PyMusicTermPlayer:
             return
         self.ytm.get_lyrics(song)
         # BUG: dont re-fetch the songs but add it to the list
-        self.list_of_downloaded_songs = fetch_songs_from_folder(self.setting.music_dir)
+        self.list_of_downloaded_songs = fetch_files_from_folder(self.setting.music_dir)
         self.list_of_lyrics = self.map_lyrics_to_song()
         self.music_player.load_song(str(path))
         self.music_player.play_song()
@@ -151,7 +150,7 @@ class PyMusicTermPlayer:
     def map_lyrics_to_song(self) -> dict[str, str]:
         """Map the lyrics to the songs"""
         list_of_lyrics: dict[str, str] = {}
-        for song in fetch_songs_from_folder(self.setting.music_dir):
+        for song in fetch_files_from_folder(self.setting.music_dir):
             lyric = (
                 self.setting.lyrics_dir + f"/{Path(song).stem.removesuffix('.mp3')}.md"
             )

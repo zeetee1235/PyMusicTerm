@@ -3,6 +3,7 @@ from pytubefix import YouTube, Stream
 from pydub import AudioSegment
 from pathlib import Path
 from api.notification_manager import NotificationManager
+from typing import Callable
 
 
 class SongData(Protocol):
@@ -11,6 +12,61 @@ class SongData(Protocol):
     videoId: str
 
     def get_formatted_artists(self) -> str: ...
+
+
+def _download_from_yt(
+    song: SongData,
+    download_path: str,
+    callback: None | Callable[[Stream, bytes, int], None] = None,
+) -> str | None:
+    """Download a song from a song
+
+    Args:
+        song (SearchSongResult): The song to download
+
+    Returns:
+        path (str): The path of the downloaded file or None if the download failed
+    """
+    try:
+        yt = YouTube(
+            f"https://www.youtube.com/watch?v={song.videoId}",
+            on_progress_callback=callback,
+        )
+        return yt.streams.get_audio_only().download(
+            output_path=download_path,
+            filename=f"{song.title} - {song.get_formatted_artists()}.m4a",
+        )
+    except Exception as e:
+        print(e)
+        return None
+
+
+def _convert_to_mp3(path: str) -> str:
+    """Convert an audio file to mp3
+
+    Args:
+        path (str): path to the downloanded AUDIO file
+
+    Returns:
+        str: path to the mp3 file
+    """
+
+    if not isinstance(path, str):
+        raise TypeError(f"path must be a string, not {type(path)}")
+    extention = Path(path).suffix
+    new_path = path.replace(extention, ".mp3")
+    audio = AudioSegment.from_file(path)
+    audio.export(new_path, format="mp3")
+    return new_path
+
+
+def _delete_file(path: str) -> None:
+    """Delete a file
+
+    Args:
+        path (str): path to the file
+    """
+    Path(path).unlink(missing_ok=True)
 
 
 class Downloader:
@@ -36,86 +92,19 @@ class Downloader:
         if song_path.exists():
             return str(song_path)
 
-        self.notification.send_notification(
-            f"Downloading {song.title} - {song.get_formatted_artists()}",
-            "Starting download - 1/4",
-        )
-        try:
-            yt_path = self._download_from_yt(song)
-        except Exception as e:
-            self.notification.send_notification(
-                f"Downloading {song.title} - {song.get_formatted_artists()}",
-                f"Error downloading song: {e}",
-            )
+        yt_path = _download_from_yt(song, self.download_path, self.on_progress)
+
+        if yt_path is None:
             return None
 
-        self.notification.send_notification(
-            f"Downloading {self.song.title} - {self.song.get_formatted_artists()}",
-            "Song converted to mp3 - 2/4",
-        )
-        converted_path = self._convert_to_mp3(yt_path)
+        converted_path = _convert_to_mp3(yt_path)
 
-        self.notification.send_notification(
-            f"Downloading {self.song.title} - {self.song.get_formatted_artists()}",
-            "Deleting cache - 3/4",
-        )
-        self._delete_file(yt_path)
+        _delete_file(yt_path)
 
-        self.notification.send_notification(
-            f"Downloading {self.song.title} - {self.song.get_formatted_artists()}",
-            "Download finished - 4/4",
-        )
         return str(converted_path)
-
-    def _download_from_yt(self, song: SongData) -> str:
-        """Download a song from a song
-
-        Args:
-            song (SearchSongResult): The song to download
-
-        Returns:
-            path (str): The path of the downloaded file or None if the download failed
-        """
-
-        yt = YouTube(
-            f"https://www.youtube.com/watch?v={song.videoId}",
-            on_progress_callback=self.on_progress,
-        )
-        return yt.streams.get_audio_only().download(
-            output_path=self.download_path,
-            filename=f"{song.title} - {song.get_formatted_artists()}.m4a",
-        )
-
-    def _convert_to_mp3(self, path: str) -> str:
-        """Convert an audio file to mp3
-
-        Args:
-            path (str): path to the downloanded AUDIO file
-
-        Returns:
-            str: path to the mp3 file
-        """
-
-        if not isinstance(path, str):
-            raise TypeError(f"path must be a string, not {type(path)}")
-        extention = Path(path).suffix
-        new_path = path.replace(extention, ".mp3")
-        audio = AudioSegment.from_file(path)
-        audio.export(new_path, format="mp3")
-        return new_path
-
-    def _delete_file(self, path: str) -> None:
-        """Delete a file
-
-        Args:
-            path (str): path to the file
-        """
-        Path(path).unlink(missing_ok=True)
 
     def on_progress(self, stream: Stream, chunk: bytes, bytes_remaining: int) -> None:
         filesize = stream.filesize
         bytes_received = filesize - bytes_remaining
-        self.notification.send_notification(
-            f"Downloading {self.song.title} - {self.song.get_formatted_artists()}",
-            f"Download {bytes_received / filesize} - 1/4",
-        )
+        percent = (bytes_received / filesize) * 100
+        print(f"Downloaded {percent:.2f}% of {stream.title}")

@@ -14,6 +14,20 @@ LYRICS_DIR = Path(APP_DIR / "lyrics")
 LOG_DIR = Path(APP_DIR / "logs")
 
 
+def fetch_files_from_folder(folder_path: str, ending: str = "mp3") -> list[str | None]:
+    """Fetch all the files from a folder
+    Args:
+        folder_path (str): The path of the folder
+        ending (str): The ending of the files to fetch. Defaults to "mp3"
+    Returns:
+        list[str]: The list of file found
+    """
+    if not isinstance(folder_path, str):
+        raise TypeError(f"folder_path must be a string, not {type(folder_path)}")
+
+    return [str(file) for file in Path(folder_path).glob(f"*.{ending}")]
+
+
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
     base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
