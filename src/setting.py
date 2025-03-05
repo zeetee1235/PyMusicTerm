@@ -24,7 +24,8 @@ def fetch_files_from_folder(folder_path: str, ending: str = "mp3") -> list[str |
     """
     if not isinstance(folder_path, str):
         raise TypeError(f"folder_path must be a string, not {type(folder_path)}")
-
+    if not isinstance(ending, str):
+        raise TypeError(f"ending must be a string, not {type(ending)}")
     return [str(file) for file in Path(folder_path).glob(f"*.{ending}")]
 
 
@@ -118,7 +119,7 @@ class SettingManager:
             with open(SETTING_FILE, "rb") as f:
                 return toml.decode(f.read(), type=Setting)
         except Exception as e:
-            print(f"Error loading settings: {e}")
+            priapp_dirnt(f"Error loading settings: {e}")
             return Setting()
 
     def save_setting(self) -> None:
@@ -150,7 +151,7 @@ class KeyBinding:
     play_pause: str = "s"
 
 
-def rename_console(name: str) -> None:
+def rename_console(name: str, platform: str = sys.platform) -> None:
     """Rename the console
 
     Args:
@@ -158,13 +159,15 @@ def rename_console(name: str) -> None:
     """
     if not isinstance(name, str):
         raise TypeError(f"name must be a string, not {type(name)}")
-    if os.name == "nt":
+    if platform not in ("win32", "linux"):
+        raise ValueError(f"platform must be 'win32' or 'linux', not {platform}")
+    if platform == "win32":
         os.system(f"title {name}")
     else:
         print(f"\33]0;{name}\a", end="", flush=True)
 
 
-def have_internet() -> bool:
+'''def have_internet() -> bool:
     """Check if the user has internet connection"""
     conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
     try:
@@ -172,3 +175,4 @@ def have_internet() -> bool:
             return True
     except Exception:
         return False
+'''
