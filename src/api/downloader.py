@@ -1,21 +1,15 @@
-from typing import Protocol
 from pytubefix import YouTube, Stream
 from pydub import AudioSegment
 from pathlib import Path
 from api.notification_manager import NotificationManager
 from typing import Callable
-
-
-class SongData(Protocol):
-    title: str
-    duration: str
-    videoId: str
-
-    def get_formatted_artists(self) -> str: ...
+import music_tag
+import requests
+from .ytmusic import SearchResult
 
 
 def _download_from_yt(
-    song: SongData,
+    song: SearchResult,
     download_path: str,
     callback: None | Callable[[Stream, bytes, int], None] = None,
 ) -> str | None:
@@ -34,7 +28,7 @@ def _download_from_yt(
         )
         return yt.streams.get_audio_only().download(
             output_path=download_path,
-            filename=f"{song.title} - {song.get_formatted_artists()}.m4a",
+            filename=f"{song.videoId}.m4a",
         )
     except Exception as e:
         print(e)
@@ -74,7 +68,7 @@ class Downloader:
         self.download_path = download_path
         self.notification = NotificationManager()
 
-    def download(self, song: SongData) -> str | None:
+    def download(self, song: SearchResult) -> str | None:
         """Download a song from a song object and return the path of the downloaded file.
         If the file already exists, it will not be downloaded again and the path will be returned.
 
@@ -86,9 +80,7 @@ class Downloader:
         """
         self.song = song
 
-        song_path = Path(
-            f"{self.download_path}/{song.title} - {song.get_formatted_artists()}.mp3"
-        )
+        song_path = Path(f"{self.download_path}/{song.videoId}.mp3")
         if song_path.exists():
             return str(song_path)
 
@@ -98,6 +90,13 @@ class Downloader:
             return None
 
         converted_path = _convert_to_mp3(yt_path)
+
+        file_path = music_tag.load_file(converted_path)
+        file_path["title"] = song.title
+        file_path["artist"] = [artist for artist in song.artist]
+        file_path["artwork"] = requests.get(song.thumbnail, stream=True).raw.read()
+        file_path["album"] = song.album
+        file_path.save()
 
         _delete_file(yt_path)
 

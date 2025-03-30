@@ -14,11 +14,13 @@ dependencies = [
     "tomli-w>=1.2.0",
     "ytmusicapi>=1.10.1",
     "loguru>=0.6.0",
-    "ffmpeg>=1.4",
     "humanize>=4.12.1",
     "mpris-server>=0.9.0; sys_platform != 'win32'",
     "win11toast>=0.35; sys_platform == 'win32'",
     "notify-py",
+    "textual-image[textual]>=0.8.1",
+    "pillow>=11.1.0",
+    "music-tag>=0.4.3",
 ]
 
 [tool.pytest.ini_options]

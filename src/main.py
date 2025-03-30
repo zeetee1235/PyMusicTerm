@@ -1,11 +1,10 @@
-from api.ytmusic import SongData
+from api.ytmusic import SearchResult
 from player.player import PyMusicTermPlayer
 from textual.app import App, ComposeResult
 from textual.widget import Widget
 from textual.widgets import (
     Input,
     Button,
-    OptionList,
     TabbedContent,
     Label,
     TabPane,
@@ -13,18 +12,19 @@ from textual.widgets import (
     Select,
     MarkdownViewer,
     ProgressBar,
+    ListView,
+    ListItem,
 )
-from textual.widgets.option_list import Option
 from textual.containers import Horizontal, Vertical, Center
 from textual import on
 from pathlib import Path
 from datetime import timedelta
 from textual import work
+from textual._node_list import DuplicateIds
 from textual.worker import get_current_worker
 from loguru import logger
-
+from textual_image.widget import Image as WidgetImage
 from setting import SettingManager, rename_console
-
 
 # TODO : rendre plus maintenable le code existnant en refactorisant
 # TODO : renomer les fonctions pour qu'elles soient plus explicites, et pareil pour les id et classes des widgets
@@ -106,11 +106,11 @@ class PyMusicTerm(App):
                         ],
                         allow_blank=False,
                     )
-                    yield OptionList(id="search_results")
+                    yield ListView(id="search_results")
             with TabPane("Playlist", id="playlist"):
                 with Vertical():
                     yield Input(placeholder="Search for a song", id="playlist_input")
-                    yield OptionList(id="playlist_results")
+                    yield ListView(id="playlist_results")
             with TabPane("Lyrics", id="lyrics"):
                 with Vertical():
                     yield Input(placeholder="Search for a song", id="lyrics_input")
@@ -151,16 +151,15 @@ class PyMusicTerm(App):
         Args:
             event (TabbedContent.TabActivated): The event that triggered the action
         """
-        playlist_results: OptionList = self.query_one("#playlist_results")
+        playlist_results: ListView = self.query_one("#playlist_results")
         if event.tab.id.endswith("playlist"):
-            playlist_results.clear_options()
-            for i, song in enumerate(self.player.list_of_downloaded_songs):
-                playlist_results.add_option(
-                    Option(
-                        f"{i + 1}. {Path(song).stem}",
-                        id=i,
+            try:
+                for song in self.player.list_of_downloaded_songs:
+                    playlist_results.append(
+                        self._create_song_item(song),
                     )
-                )
+            except DuplicateIds:
+                logger.warning("Duplicate ids in playlist results")
 
     def update_time(self) -> None:
         """Update the time label of the player, and update the player"""
@@ -181,14 +180,14 @@ class PyMusicTerm(App):
                 "#label_current_song_artist"
             )
             label_current_song_title.update(
-                Path(
-                    self.player.list_of_downloaded_songs[self.player.current_song_index]
-                ).stem.split(" - ")[0]
+                self.player.list_of_downloaded_songs[
+                    self.player.current_song_index
+                ].title
             )
             label_current_song_artist.update(
-                Path(
-                    self.player.list_of_downloaded_songs[self.player.current_song_index]
-                ).stem.split(" - ")[1]
+                self.player.list_of_downloaded_songs[
+                    self.player.current_song_index
+                ].get_formatted_artists()
             )
         try:
             percentage = current_float / length_float
@@ -198,15 +197,15 @@ class PyMusicTerm(App):
             progress=percentage * 100,
         )
         self.player.check_if_song_ended()
-        lyrics_results: MarkdownViewer = self.query_one("#lyrics_results")
-        if not self.player.playing:
-            return
-        self.player.dict_of_lyrics = self.player.map_lyrics_to_song()
-        current_lyric = self.player.dict_of_lyrics[
-            self.player.list_of_downloaded_songs[self.player.current_song_index]
-        ]
-        with open(current_lyric, "r", encoding="utf-8") as f:
-            lyrics_results.document.update(f.read())
+        # lyrics_results: MarkdownViewer = self.query_one("#lyrics_results")
+        # if not self.player.playing:
+        #    return
+        # self.player.dict_of_lyrics = self.player.map_lyrics_to_song()
+        # current_lyric = self.player.dict_of_lyrics[
+        #    self.player.list_of_downloaded_songs[self.player.current_song_index]
+        # ]
+        # with open(current_lyric, "r", encoding="utf-8") as f:
+        #    lyrics_results.document.update(f.read())
 
     def action_return_on_search_tab(self):
         """Set the search tab as the active tab"""
@@ -223,25 +222,29 @@ class PyMusicTerm(App):
         tab: TabbedContent = self.query_one("#tabbed_content")
         tab.active = "lyrics"
 
-    @on(OptionList.OptionSelected, "#playlist_results")
-    def select_playlist_result(self, event: OptionList.OptionSelected) -> None:
+    @on(ListView.Selected, "#playlist_results")
+    def select_playlist_result(self, event: ListView.Selected) -> None:
         """Select a song from the playlist results and play it"""
-        id = int(event.option.id)
+        id = event.item.id.removeprefix("id-")
+        for i, song in enumerate(self.player.list_of_downloaded_songs):
+            if song.videoId == id:
+                id = i
+                break
         self.player.play_from_list(id)
         self.toggle_button()
 
-    @on(OptionList.OptionSelected, "#search_results")
-    def select_result(self, event: OptionList.OptionSelected) -> None:
+    @on(ListView.Selected, "#search_results")
+    def select_result(self, event: ListView.Selected) -> None:
         """Select a song from the search results and play it"""
-        video_id = str(event.option.id)
+        video_id = str(event.item.id).removeprefix("id-")
         self.player.play_from_ytb(video_id)
         self.toggle_button()
 
     @on(Button.Pressed, "#previous")
     def action_previous(self) -> None:
         """Play the previous song"""
-        playlist_results: OptionList = self.query_one("#playlist_results")
-        playlist_results.highlighted = self.player.previous()
+        playlist_results: ListView = self.query_one("#playlist_results")
+        playlist_results.index = self.player.previous()
 
     @on(Button.Pressed, "#play_pause")
     def action_play(self) -> None:
@@ -265,21 +268,18 @@ class PyMusicTerm(App):
     @on(Button.Pressed, "#next")
     def action_next(self) -> None:
         """Play the next song"""
-        playlist_results: OptionList = self.query_one("#playlist_results")
-        playlist_results.highlighted = self.player.next()
+        playlist_results: ListView = self.query_one("#playlist_results")
+        playlist_results.index = self.player.next()
 
     @on(Button.Pressed, "#shuffle")
     def action_shuffle(self) -> None:
         """Shuffle the list of downloaded songs"""
         self.player.suffle()
-        playlist_results: OptionList = self.query_one("#playlist_results")
-        playlist_results.clear_options()
+        playlist_results: ListView = self.query_one("#playlist_results")
+        playlist_results.clear()
         for i, song in enumerate(self.player.list_of_downloaded_songs):
-            playlist_results.add_option(
-                Option(
-                    f"{i + 1}. {Path(song).stem}",
-                    id=i,
-                )
+            ListItem(
+                Label(f"{i + 1}. {song.title} - {song.get_formatted_artists()}"),
             )
 
     @on(Button.Pressed, "#loop")
@@ -314,23 +314,39 @@ class PyMusicTerm(App):
         if not worker.is_cancelled:
             self.call_from_thread(self.update_search_results, results)
 
-    def update_search_results(self, results: list[SongData]) -> None:
+    def update_search_results(self, results: list[SearchResult]) -> None:
         """Update the search results
 
         Args:
             results (list): The list of results from youtube music
         """
-        search_results: OptionList = self.query_one("#search_results")
+        search_results: ListView = self.query_one("#search_results")
         search_input: Input = self.query_one("#search_input")
-        search_results.clear_options()
-        for i, result in enumerate(results):
-            search_results.add_option(
-                Option(
-                    f"{i + 1}. {result.title} - {result.get_formatted_artists()}",
-                    result.videoId,
-                )
-            )
+        search_results.clear()
+        for result in results:
+            search_results.append(self._create_song_item(result))
         search_input.loading = False
+
+    def _create_song_item(self, song: SearchResult) -> ListItem:
+        """Create a song item for the search results
+
+        Args:
+            song (SearchResult): The song to create the item for
+
+        Returns:
+            ListItem: The song item
+        """
+        return ListItem(
+            Horizontal(
+                WidgetImage(song.thumbnail, classes="image"),
+                Label(
+                    f"{song.title} - {song.get_formatted_artists()}",
+                    classes="title",
+                ),
+                classes="result",
+            ),
+            id=f"id-{song.videoId}",
+        )
 
     def action_seek_back(self) -> None:
         """Seek backward 10 seconds"""

@@ -1,15 +1,18 @@
+import requests
 import ytmusicapi
 from dataclasses import dataclass
 from typing import Protocol
 import ytmusicapi.exceptions
 import ytmusicapi.ytmusic
 from api.lyrics import LyricsDownloader
+from PIL import Image
 
 
 class SongData(Protocol):
     title: str
     duration: str
     videoId: str
+    thumbnail: str
 
     def get_formatted_artists(self) -> str:
         """Format the list of artists to a string
@@ -20,21 +23,17 @@ class SongData(Protocol):
 
 
 @dataclass
-class SongArtist:
-    name: str
-    id: str
-
-
-@dataclass
 class SearchResult(SongData):
     title: str
-    artist: list[SongArtist]
+    artist: list[str]
     duration: int
     videoId: str
+    thumbnail: str
+    album: str
 
     def get_formatted_artists(self) -> str:
         """Get the formatted artists of the song"""
-        return ", ".join([artist.name for artist in self.artist])
+        return ", ".join([artist for artist in self.artist])
 
 
 @dataclass
@@ -69,9 +68,13 @@ class YTMusic:
         return [
             SearchResult(
                 title=result["title"],
-                artist=[SongArtist(**artist) for artist in result["artists"]],
+                artist=[artist["name"] for artist in result["artists"]],
                 duration=result["duration"],
                 videoId=result["videoId"],
+                thumbnail=Image.open(
+                    requests.get(result["thumbnails"][0]["url"], stream=True).raw
+                ),
+                album=result["album"]["name"],
             )
             for result in results
         ]

@@ -20,14 +20,11 @@ class MusicPlayer(metaclass=Singleton):
         self.playback.set_volume(default_volume)
         self._loop_at_end = False
 
-    def __str__(self) -> str:
-        return f"MusicPlayer(volume={self.volume}, busy={self.busy}, ended={self.ended}, position={self.position}, song_length={self.song_length})"
-
     def unload_song(self) -> None:
         self.playback.stop()
 
     def load_song(self, path: str) -> None:
-        self.playback.load_file(path)
+        self.playback.load_file(str(path))
 
     def play_song(self) -> None:
         self.playback.play()

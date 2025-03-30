@@ -1,4 +1,6 @@
 from pathlib import Path
+
+import music_tag
 from api.ytmusic import SearchResult, YTMusic
 from api.music_player import MusicPlayer
 from api.downloader import Downloader
@@ -6,6 +8,22 @@ from player.media_control import MediaControl
 from setting import SettingManager, fetch_files_from_folder
 from random import shuffle
 from api.lyrics import LyricsDownloader
+from dataclasses import dataclass
+
+
+@dataclass
+class SongData:
+    title: str
+    duration: str
+    videoId: str
+    thumbnail: str
+    album: str
+    artist: list[str]
+    path: Path
+
+    def get_formatted_artists(self) -> str:
+        """Get the formatted artists of the song"""
+        return ", ".join([artist for artist in self.artist])
 
 
 class PyMusicTermPlayer:
@@ -20,13 +38,34 @@ class PyMusicTermPlayer:
         lyrics = LyricsDownloader(self.setting.lyrics_dir)
         self.ytm = YTMusic(lyrics)
         self.downloader = Downloader(self.setting.music_dir)
-        self.list_of_downloaded_songs: list[str] = fetch_files_from_folder(
-            self.setting.music_dir, "mp3"
-        )
-        self.dict_of_lyrics: dict[str, str] = self.map_lyrics_to_song()
+        self.list_of_downloaded_songs: list[SongData] = self.get_downloaded_songs()
         self.dict_of_song_result: dict[str, SearchResult] = {}
         self.current_song_index = 0
-        self.current_song: str | None = None
+        self.current_song: SongData | None = None
+
+    def get_downloaded_songs(self) -> list[SongData]:
+        """Get the list of downloaded songs
+
+        Returns:
+            list[Song]: the list of downloaded songs
+        """
+        songs = fetch_files_from_folder(self.setting.music_dir, "mp3")
+        list_of_songs = []
+        for song in songs:
+            song_metadata = music_tag.load_file(song)
+            artist = song_metadata["artist"]
+            list_of_songs.append(
+                SongData(
+                    title=str(song_metadata["title"]),
+                    artist=artist.values,
+                    duration=str(song_metadata["#length"]),
+                    videoId=Path(song).stem,
+                    thumbnail=song_metadata["artwork"].first.thumbnail([128, 128]),
+                    album=str(song_metadata["album"]),
+                    path=Path(song),
+                )
+            )
+        return list_of_songs
 
     def query(self, query: str, filter: str) -> list[SearchResult]:
         """Query the YTMusic API for a song
@@ -56,10 +95,8 @@ class PyMusicTermPlayer:
         path = self.downloader.download(song)
         if path is None:
             return
-        self.ytm.get_lyrics(song)
         # BUG: dont re-fetch the songs but add it to the list
-        self.list_of_downloaded_songs = fetch_files_from_folder(self.setting.music_dir)
-        self.list_of_lyrics = self.map_lyrics_to_song()
+        self.list_of_downloaded_songs = self.get_downloaded_songs()
         self.music_player.load_song(str(path))
         self.music_player.play_song()
         self.media_control.on_playback()
@@ -77,7 +114,7 @@ class PyMusicTermPlayer:
             raise TypeError(f"id must be an integer, not {type(id)}")
         self.current_song_index = id
         self.current_song = self.list_of_downloaded_songs[id]
-        self.music_player.load_song(self.list_of_downloaded_songs[id])
+        self.music_player.load_song(self.list_of_downloaded_songs[id].path)
         self.music_player.play_song()
         self.media_control.on_playback()
 
@@ -88,7 +125,7 @@ class PyMusicTermPlayer:
         else:
             self.current_song_index -= 1
         self.music_player.load_song(
-            self.list_of_downloaded_songs[self.current_song_index]
+            self.list_of_downloaded_songs[self.current_song_index].path
         )
         self.music_player.play_song()
         self.media_control.on_playback()
@@ -102,13 +139,13 @@ class PyMusicTermPlayer:
             self.current_song_index += 1
         self.current_song = self.list_of_downloaded_songs[self.current_song_index]
         self.music_player.load_song(
-            self.list_of_downloaded_songs[self.current_song_index]
+            self.list_of_downloaded_songs[self.current_song_index].path
         )
         self.music_player.play_song()
         self.media_control.on_playback()
         return self.current_song_index
 
-    def seek(self, seconds: float = 10) -> None:
+    def seek(self, seconds: float | int = 10) -> None:
         """Seek forward or backward
 
         Args:
@@ -146,16 +183,6 @@ class PyMusicTermPlayer:
             return
         if self.music_player.position == 0 and not self.music_player.playing:
             self.next()
-
-    def map_lyrics_to_song(self) -> dict[str, str]:
-        """Map the lyrics to the songs"""
-        list_of_lyrics: dict[str, str] = {}
-        for song in fetch_files_from_folder(self.setting.music_dir):
-            lyric = (
-                self.setting.lyrics_dir + f"/{Path(song).stem.removesuffix('.mp3')}.md"
-            )
-            list_of_lyrics[song] = Path(lyric)
-        return list_of_lyrics
 
     def stop(self) -> None:
         self.music_player.unload_song()

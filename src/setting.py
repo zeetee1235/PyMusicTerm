@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from msgspec import toml
 import os
-import http.client as httplib
 import sys
 
 HOME = Path.home()
@@ -119,7 +118,7 @@ class SettingManager:
             with open(SETTING_FILE, "rb") as f:
                 return toml.decode(f.read(), type=Setting)
         except Exception as e:
-            priapp_dirnt(f"Error loading settings: {e}")
+            print(f"Error loading settings: {e}")
             return Setting()
 
     def save_setting(self) -> None:
