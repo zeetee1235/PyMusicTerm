@@ -4,8 +4,20 @@ from pathlib import Path
 from api.notification_manager import NotificationManager
 from typing import Callable
 import music_tag
-import requests
 from .ytmusic import SearchResult
+
+from PIL import Image
+import io
+
+
+def image_to_byte(image: Image) -> bytes:
+    # BytesIO is a file-like buffer stored in memory
+    imgByteArr = io.BytesIO()
+    # image.save expects a file-like as a argument
+    image.save(imgByteArr, format=image.format)
+    # Turn the BytesIO object back into a bytes object
+    imgByteArr = imgByteArr.getvalue()
+    return imgByteArr
 
 
 def _download_from_yt(
@@ -94,7 +106,7 @@ class Downloader:
         file_path = music_tag.load_file(converted_path)
         file_path["title"] = song.title
         file_path["artist"] = [artist for artist in song.artist]
-        file_path["artwork"] = requests.get(song.thumbnail, stream=True).raw.read()
+        file_path["artwork"] = image_to_byte(song.thumbnail)
         file_path["album"] = song.album
         file_path.save()
 

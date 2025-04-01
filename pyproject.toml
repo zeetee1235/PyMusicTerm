@@ -18,7 +18,7 @@ dependencies = [
     "mpris-server>=0.9.0; sys_platform != 'win32'",
     "win11toast>=0.35; sys_platform == 'win32'",
     "notify-py",
-    "textual-image[textual]>=0.8.1",
+    "textual-image[textual]>=0.8.2",
     "pillow>=11.1.0",
     "music-tag>=0.4.3",
 ]

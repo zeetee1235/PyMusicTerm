@@ -1,9 +1,10 @@
-from pathlib import Path
-
 from typing import List, Protocol
 from mpris_server.adapters import PlayState, MprisAdapter
 from mpris_server.base import URI, MIME_TYPES
 import sys
+from mpris_server import MetadataObj
+
+from api.ytmusic import SongData
 
 
 class PyMusicTermPlayer(Protocol):
@@ -11,7 +12,7 @@ class PyMusicTermPlayer(Protocol):
     current_song_index: int
     song_length: float
     playing: bool
-    list_of_downloaded_songs: list[str]
+    list_of_downloaded_songs: list[SongData]
     dict_of_lyrics: dict[str, str]
 
     def query(self, query: str, filter: str) -> list: ...
@@ -131,24 +132,18 @@ class HAdapter(MprisAdapter):
     def can_control(self) -> bool:
         return True
 
-    def metadata(self) -> dict:
-        song_data = Path(
-            self.player.list_of_downloaded_songs[self.player.current_song_index]
-        ).stem.split(" - ")
-        title = ", ".join(song_data[:-1])
-        artist = song_data[-1]
-        metadata = {
-            "mpris:trackid": "/track/1",
-            "mpris:length": self.player.song_length if not 0 else None,
-            "mpris:artUrl": "Example",
-            "xesam:url": "https://google.com",
-            "xesam:title": title,
-            "xesam:artist": [artist],
-            "xesam:album": "",
-            "xesam:albumArtist": [],
-            "xesam:discNumber": 1,
-            "xesam:trackNumber": 1,
-            "xesam:comment": [],
-        }
+    def metadata(self) -> MetadataObj:
+        song_data = self.player.list_of_downloaded_songs[self.player.current_song_index]
+        title = song_data.title
+        artist = [song_data.get_formatted_artists()]
+        album = song_data.album
+        length = float(song_data.duration)
+        metadata = MetadataObj(
+            album=album,
+            title=title,
+            artists=artist,
+            length=length,
+            art_url=f"https://i.ytimg.com/vi/{song_data.videoId}/maxresdefault.jpg",
+        )
 
         return metadata

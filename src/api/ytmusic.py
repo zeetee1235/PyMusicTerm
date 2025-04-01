@@ -5,7 +5,7 @@ from typing import Protocol
 import ytmusicapi.exceptions
 import ytmusicapi.ytmusic
 from api.lyrics import LyricsDownloader
-from PIL import Image
+from PIL import Image, ImageFile
 
 
 class SongData(Protocol):
@@ -13,6 +13,7 @@ class SongData(Protocol):
     duration: str
     videoId: str
     thumbnail: str
+    album: str
 
     def get_formatted_artists(self) -> str:
         """Format the list of artists to a string
@@ -28,7 +29,7 @@ class SearchResult(SongData):
     artist: list[str]
     duration: int
     videoId: str
-    thumbnail: str
+    thumbnail: ImageFile
     album: str
 
     def get_formatted_artists(self) -> str:

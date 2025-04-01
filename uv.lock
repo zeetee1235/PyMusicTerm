@@ -362,7 +362,7 @@ requires-dist = [
     { name = "pydub", specifier = ">=0.25.1" },
     { name = "pytubefix", specifier = ">=8.12.1" },
     { name = "textual", specifier = ">=1.0.0" },
-    { name = "textual-image", extras = ["textual"], specifier = ">=0.8.1" },
+    { name = "textual-image", extras = ["textual"], specifier = ">=0.8.2" },
     { name = "tomli-w", specifier = ">=1.2.0" },
     { name = "win11toast", marker = "sys_platform == 'win32'", specifier = ">=0.35" },
     { name = "ytmusicapi", specifier = ">=1.10.1" },
@@ -612,15 +612,15 @@ wheels = [
 
 [[package]]
 name = "textual-image"
-version = "0.8.1"
+version = "0.8.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pillow" },
     { name = "rich" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/23/9d917fe351132bd091b6c1993a172a1275de6a3b909fb5d3165bed1c4fc5/textual_image-0.8.1.tar.gz", hash = "sha256:349afd25e346d92114a2c0cf450d06c5a6ffc7bf5eceb0850567b9ae6fb17851", size = 108612 }
+sdist = { url = "https://files.pythonhosted.org/packages/40/e1/ad90ae431c615dd1ec5cdbf21ae573f8af68283619cf6c0f404e684d61ab/textual_image-0.8.2.tar.gz", hash = "sha256:484fe6ab4a19cf243ea397dd34255092783231f3fbce91f50800faa5852254a0", size = 108636 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/09/c75a2cf825a04ba2e8d44655e0896d072ccf8f40266c96e7da811f8a17ff/textual_image-0.8.1-py3-none-any.whl", hash = "sha256:1df65791b796d422efca3d82271c36605eb516692886ac2a78e7c3215a645645", size = 109357 },
+    { url = "https://files.pythonhosted.org/packages/8b/81/a0685932473a7a626bd4d27c73f0b8593881391b68ac2fe6f1dc69037c4b/textual_image-0.8.2-py3-none-any.whl", hash = "sha256:35ab95076d2edcd9e59d66e1881bf177ab8acd7f131446a129f55cae9c81c447", size = 109372 },
 ]
 
 [package.optional-dependencies]
