@@ -348,6 +348,7 @@ class PyMusicTerm(App):
                 classes="result",
             ),
             id=f"id-{song.videoId}",
+            classes="song_item",
         )
 
     def action_seek_back(self) -> None:

@@ -17,6 +17,19 @@ Rule {
     padding: 0;
 }
 
+#search_results {
+    margin: 0 1;
+}
+#playlist_results {
+    margin: 0 1;
+}
+
+.song_item {
+    padding: 0 0;
+    margin: 1 0;
+    border-bottom: hkey white;
+}
+
 .control_label {
     padding: 0 1;
     align: center bottom;
@@ -25,7 +38,7 @@ Rule {
 .image {
     height: 3;
     width: 6;
-    margin: 0 1 0 0;
+    margin: 0 1 0 1;
     align: center middle;
 }
 .result {
