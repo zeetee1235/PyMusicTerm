@@ -295,10 +295,12 @@ class PyMusicTerm(App):
     @on(Input.Submitted, "#search_input")
     def search(self) -> None:
         """Search for a song on YTMusic and display the results"""
+        search_results: ListView = self.query_one("#search_results")
+        search_results.clear()
         search_input: Input = self.query_one("#search_input")
         if search_input.value == "":
             return
-        search_input.loading = True
+        search_results.loading = True
         self.search_ytb_thread(search_input.value)
 
     @work(exclusive=True, thread=True)
@@ -325,7 +327,7 @@ class PyMusicTerm(App):
         search_results.clear()
         for result in results:
             search_results.append(self._create_song_item(result))
-        search_input.loading = False
+        search_results.loading = False
 
     def _create_song_item(self, song: SearchResult) -> ListItem:
         """Create a song item for the search results
