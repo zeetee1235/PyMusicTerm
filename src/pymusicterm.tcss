@@ -17,6 +17,7 @@ Rule {
     padding: 0;
 }
 
+
 #search_results {
     margin: 0 1;
 }

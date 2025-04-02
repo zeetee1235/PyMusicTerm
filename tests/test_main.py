@@ -10,6 +10,7 @@ def test_format_time():
     assert format_time(3600) == "1:00:00"
     assert format_time(3661) == "1:01:01"
     assert format_time(0) == "00:00"
+    assert format_time(-100) == "00:00"
     with pytest.raises(TypeError):
         format_time("90")
 

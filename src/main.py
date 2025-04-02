@@ -53,6 +53,8 @@ def format_time(seconds: int | float) -> str:
         )
     if isinstance(seconds, float):
         seconds = int(seconds)
+    if seconds < 0:
+        seconds = 0
     return str(timedelta(seconds=seconds)).removeprefix("0:")
 
 
@@ -137,12 +139,12 @@ class PyMusicTerm(App):
             )
             yield Label("--:--", id="label_song_length", classes="control_label")
         with Horizontal(classes="player_controls"):
-            yield Button("Previous", id="previous")
-            yield Button("Play", id="play_pause")
-            yield Button("Next", id="next")
+            yield Button("󰼨", id="previous")
+            yield Button("󰐊", id="play_pause")
+            yield Button("󰼧", id="next")
         with Horizontal(classes="player_controls"):
-            yield Button("Shuffle", id="shuffle")
-            yield Button("Loop", id="loop")
+            yield Button("󰒟", id="shuffle")
+            yield Button("󰛤", id="loop")
 
     @on(TabbedContent.TabActivated)
     def action_select_playlist_tab(self, event: TabbedContent.TabActivated) -> None:
@@ -259,9 +261,9 @@ class PyMusicTerm(App):
         """Toggle the play button label and start the timer if it's not running"""
         button: Button = self.query_one("#play_pause")
         if self.player.playing:
-            button.label = "Pause"
+            button.label = "󰏤"
         else:
-            button.label = "Play"
+            button.label = "󰐊"
         if self.timer is None:
             self.timer = self.set_interval(0.1, self.update_time, name="update_time")
 
