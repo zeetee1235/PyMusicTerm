@@ -19,7 +19,6 @@ cd PyMusicTerm
 uv sync #or pip install the dependencies
 ```
 
-
 ### Prerequisites
 - Python 3.12 (tested) or higher.
 - `ffmpeg` (required for `pydub` and audio processing).
@@ -46,7 +45,6 @@ The player reads a configuration file (`setting.toml`) for custom settings in th
 - [`loguru`](https://pypi.org/project/loguru/): Advanced logging.
 - [`mpris-server`](https://pypi.org/project/mpris-server/): MPRIS integration (Linux and macos only).
 
-
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
@@ -62,4 +60,3 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 ---
 
 Enjoy your music in the terminal with **pymusicterm**!
-
