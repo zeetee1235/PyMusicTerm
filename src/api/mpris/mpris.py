@@ -2,7 +2,7 @@ from typing import List, Protocol
 from mpris_server.adapters import PlayState, MprisAdapter
 from mpris_server.base import URI, MIME_TYPES
 import sys
-from mpris_server import MetadataObj
+from mpris_server import MetadataObj, Track
 
 from api.ytmusic import SongData
 
@@ -20,11 +20,10 @@ class PyMusicTermPlayer(Protocol):
     def play_from_list(self, id: int) -> None: ...
     def previous(self) -> None: ...
     def next(self) -> None: ...
-    def seek_forward(self, time: float = 10) -> None: ...
+    def seek(self, time: float = 10) -> None: ...
     def suffle(self) -> None: ...
     def loop_at_end(self) -> bool: ...
     def update(self) -> None: ...
-    def map_lyrics_to_song(self) -> dict[str, str]: ...
     def stop(self) -> None: ...
     def pause_song(self) -> None: ...
     def resume_song(self) -> None: ...
@@ -77,8 +76,9 @@ class HAdapter(MprisAdapter):
         else:
             return PlayState.PLAYING
 
-    def seek(self, time):
-        self.player.seek_forward(time)
+    def seek(self, time, track_id=None):
+        """Seek to a specific time in the current track."""
+        self.player.seek(time / 1000000)
 
     def is_repeating(self) -> bool:
         return False
@@ -132,12 +132,28 @@ class HAdapter(MprisAdapter):
     def can_control(self) -> bool:
         return True
 
-    def metadata(self) -> MetadataObj:
+    def get_current_track(self) -> Track:
         song_data = self.player.list_of_downloaded_songs[self.player.current_song_index]
         title = song_data.title
         artist = [song_data.get_formatted_artists()]
         album = song_data.album
         length = self.player.song_length
+        track = Track(
+            title=title,
+            artists=artist,
+            album=album,
+            length=length,
+            art_url=f"https://i.ytimg.com/vi/{song_data.videoId}/maxresdefault.jpg",
+        )
+
+        return track
+
+    def metadata(self) -> MetadataObj:
+        song_data = self.player.list_of_downloaded_songs[self.player.current_song_index]
+        title = song_data.title
+        artist = [song_data.get_formatted_artists()]
+        album = song_data.album
+        length = self.player.song_length * 1000000
         metadata = MetadataObj(
             album=album,
             title=title,
