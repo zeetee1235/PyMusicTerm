@@ -205,16 +205,18 @@ class PyMusicTerm(App):
     def select_playlist_result(self, event: ListView.Selected) -> None:
         """Select a song from the playlist results and play it"""
         id = event.item.id.removeprefix("id-")
+        self.play_from_id(id)
+
+    def play_from_id(self, ids: str) -> None:
+        """Play a song from the playlist results and play it
+
+        Args:
+            id (str): The id of the song to play
+        """
         for i, song in enumerate(self.player.list_of_downloaded_songs):
-            if song.videoId == id:
-                id = i
-                event.item.set_class(True, "playing")
-            else:
-                event.list_view.get_widget_by_id(f"id-{song.videoId}").set_class(
-                    False, "playing"
-                )
-        self.player.play_from_list(id)
-        self.toggle_button()
+            if song.videoId == ids:
+                self.player.play_from_list(i)
+                self.toggle_button()
 
     @on(ListView.Selected, "#search_results")
     def select_result(self, event: ListView.Selected) -> None:
