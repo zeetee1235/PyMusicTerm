@@ -137,13 +137,14 @@ class HAdapter(MprisAdapter):
         title = song_data.title
         artist = [song_data.get_formatted_artists()]
         album = song_data.album
-        length = float(song_data.duration)
+        length = self.player.song_length
         metadata = MetadataObj(
             album=album,
             title=title,
             artists=artist,
             length=length,
             art_url=f"https://i.ytimg.com/vi/{song_data.videoId}/maxresdefault.jpg",
+            url=f"https://www.youtube.com/watch?v={song_data.videoId}",
         )
 
         return metadata

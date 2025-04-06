@@ -5,6 +5,7 @@ from api.ytmusic import SearchResult, YTMusic
 from api.music_player import MusicPlayer
 from api.downloader import Downloader
 from player.media_control import MediaControl
+from player.util import format_time
 from setting import SettingManager, fetch_files_from_folder
 from random import shuffle
 from api.lyrics import LyricsDownloader
@@ -58,7 +59,7 @@ class PyMusicTermPlayer:
                 SongData(
                     title=str(song_metadata["title"]),
                     artist=artist.values,
-                    duration=str(song_metadata["#length"]),
+                    duration=format_time(float(str(song_metadata["#length"]))),
                     videoId=Path(song).stem,
                     thumbnail=song_metadata["artwork"].first.thumbnail([128, 128]),
                     album=str(song_metadata["album"]),

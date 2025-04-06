@@ -21,11 +21,13 @@ Rule {
 #search_results {
     margin: 0 1;
 }
+
 #playlist_results {
     margin: 0 1;
 }
 
 .song_item {
+    height: 5;
     padding: 1 0 0 0;
     border-bottom: hkey white;
 }
@@ -35,18 +37,21 @@ Rule {
     align: center bottom;
 }
 
+.length {
+    padding: 0 1;
+    align: center bottom;
+}
 .image {
     height: 3;
     width: 6;
     margin: 0 1 0 1;
     align: center middle;
 }
-.result {
-    height: 3;
-    align: left middle;
+
+ListItem {
+    transition: background 0.3s;
 }
 
-.player_status {
-    padding: 0 0;
-    align: center bottom;
+.playing {
+    background: $primary;
 }

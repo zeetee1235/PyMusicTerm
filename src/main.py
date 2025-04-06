@@ -18,12 +18,11 @@ from textual.widgets import (
 from textual.containers import Horizontal, Vertical, Center
 from textual import on
 from pathlib import Path
-from datetime import timedelta
 from textual import work
-from textual._node_list import DuplicateIds
 from textual.worker import get_current_worker
 from loguru import logger
 from textual_image.widget import Image as WidgetImage
+from player.util import format_time
 from setting import SettingManager, rename_console
 
 # TODO : rendre plus maintenable le code existnant en refactorisant
@@ -35,29 +34,6 @@ from setting import SettingManager, rename_console
 # TODO : ajouter des logs messages
 
 
-def format_time(seconds: int | float) -> str:
-    """Format the time to a string (ex: 90s -> 01:30)
-
-    Args:
-        seconds (int | float): The time in secondes
-
-    Raises:
-        TypeError: If the type of the seconds is not int or float
-
-    Returns:
-        str: The string representation of the time
-    """
-    if not isinstance(seconds, (int, float)):
-        raise TypeError(
-            f"Invalid type for time for {type(seconds)}, please use int or float"
-        )
-    if isinstance(seconds, float):
-        seconds = int(seconds)
-    if seconds < 0:
-        seconds = 0
-    return str(timedelta(seconds=seconds)).removeprefix("0:")
-
-
 class PyMusicTerm(App):
     BINDINGS = [
         ("q", "seek_back", "Seek backward"),
@@ -65,6 +41,8 @@ class PyMusicTerm(App):
         ("d", "seek_forward", "Seek forward"),
         ("r", "shuffle", "Shuffle"),
         ("l", "loop", "Loop at the end"),
+        ("a", "previous", "Previous song"),
+        ("e", "next", "Next song"),
         ("&", "return_on_search_tab", "Go to the search tab"),
         ("é", "return_on_playlist_tab", "Go to the playlist tab"),
         ('"', "return_on_lyrics_tab", "Go to the lyrics tab"),
@@ -155,13 +133,12 @@ class PyMusicTerm(App):
         """
         playlist_results: ListView = self.query_one("#playlist_results")
         if event.tab.id.endswith("playlist"):
-            try:
-                for song in self.player.list_of_downloaded_songs:
-                    playlist_results.append(
-                        self._create_song_item(song),
-                    )
-            except DuplicateIds:
-                logger.warning("Duplicate ids in playlist results")
+            children_id = [
+                child.id.removeprefix("id-") for child in playlist_results.children
+            ]
+            for song in self.player.list_of_downloaded_songs:
+                if song.videoId not in children_id:
+                    playlist_results.append(self._create_song_item(song))
 
     def update_time(self) -> None:
         """Update the time label of the player, and update the player"""
@@ -231,7 +208,11 @@ class PyMusicTerm(App):
         for i, song in enumerate(self.player.list_of_downloaded_songs):
             if song.videoId == id:
                 id = i
-                break
+                event.item.set_class(True, "playing")
+            else:
+                event.list_view.get_widget_by_id(f"id-{song.videoId}").set_class(
+                    False, "playing"
+                )
         self.player.play_from_list(id)
         self.toggle_button()
 
@@ -245,6 +226,7 @@ class PyMusicTerm(App):
     @on(Button.Pressed, "#previous")
     def action_previous(self) -> None:
         """Play the previous song"""
+        self.toggle_button()
         playlist_results: ListView = self.query_one("#playlist_results")
         playlist_results.index = self.player.previous()
 
@@ -270,6 +252,7 @@ class PyMusicTerm(App):
     @on(Button.Pressed, "#next")
     def action_next(self) -> None:
         """Play the next song"""
+        self.toggle_button()
         playlist_results: ListView = self.query_one("#playlist_results")
         playlist_results.index = self.player.next()
 
@@ -325,7 +308,6 @@ class PyMusicTerm(App):
             results (list): The list of results from youtube music
         """
         search_results: ListView = self.query_one("#search_results")
-        search_input: Input = self.query_one("#search_input")
         search_results.clear()
         for result in results:
             search_results.append(self._create_song_item(result))
@@ -343,11 +325,20 @@ class PyMusicTerm(App):
         return ListItem(
             Horizontal(
                 WidgetImage(song.thumbnail, classes="image"),
-                Label(
-                    f"{song.title} - {song.get_formatted_artists()}",
-                    classes="title",
+                Vertical(
+                    Label(
+                        song.title,
+                        classes="title",
+                    ),
+                    Label(
+                        song.get_formatted_artists(),
+                        classes="artist",
+                    ),
                 ),
-                classes="result",
+                Label(
+                    song.duration,
+                    classes="length",
+                ),
             ),
             id=f"id-{song.videoId}",
             classes="song_item",

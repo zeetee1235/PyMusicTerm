@@ -3,14 +3,20 @@ import ytmusicapi
 from dataclasses import dataclass
 from typing import Protocol
 import ytmusicapi.exceptions
-import ytmusicapi.ytmusic
 from api.lyrics import LyricsDownloader
 from PIL import Image, ImageFile
+import requests_cache
+
+
+# Set up a cache for requests
+requests_cache.install_cache(
+    "ytmusic_cache",
+)
 
 
 class SongData(Protocol):
     title: str
-    duration: str
+    duration: float
     videoId: str
     thumbnail: str
     album: str
@@ -27,7 +33,7 @@ class SongData(Protocol):
 class SearchResult(SongData):
     title: str
     artist: list[str]
-    duration: int
+    duration: str
     videoId: str
     thumbnail: ImageFile
     album: str
@@ -63,7 +69,7 @@ class YTMusic:
         if not isinstance(query, str):
             raise TypeError(f"query must be a string, not {type(query)}")
         if not isinstance(filter, str):
-            raise TypeError("filter must be a string, not {type(filter)}")
+            raise TypeError(f"filter must be a string, not {type(filter)}")
 
         results = self.client.search(query, filter)
         return [
