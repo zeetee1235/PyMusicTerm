@@ -325,6 +325,7 @@ class PyMusicTerm(App):
             ListItem: The song item
         """
         logger.warning(str(song))
+
         return ListItem(
             Horizontal(
                 WidgetImage(song.thumbnail, classes="image"),
@@ -332,18 +333,22 @@ class PyMusicTerm(App):
                     Label(
                         song.title,
                         classes="title",
+                        markup=False,
                     ),
                     Label(
                         song.get_formatted_artists(),
+                        markup=False,
                         classes="artist",
                     ),
                 ),
                 Label(
                     song.album,
+                    markup=False,
                     classes="album",
                 ),
                 Label(
                     song.duration,
+                    markup=False,
                     classes="length",
                 ),
             ),

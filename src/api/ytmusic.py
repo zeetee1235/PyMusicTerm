@@ -72,7 +72,7 @@ class YTMusic:
                 album = "Unknown"
             r.append(
                 SongData(
-                    title=title.replace("[", "").replace("]", ""),
+                    title=title,
                     artist=artist,
                     duration=duration,
                     videoId=videoId,

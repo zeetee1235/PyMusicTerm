@@ -29,7 +29,29 @@ Rule {
 .song_item {
     height: 5;
     padding: 1 0 0 0;
+    text-wrap: nowrap;
     border-bottom: hkey white;
+    text-overflow: ellipsis;
+
+}
+
+.title {
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+    width: 50%;
+}
+
+.album {
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+    width: 20%;
+}
+
+
+.artist {
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+    width: 50%;
 }
 
 .control_label {
