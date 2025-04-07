@@ -324,7 +324,6 @@ class PyMusicTerm(App):
         Returns:
             ListItem: The song item
         """
-        logger.warning(str(song))
 
         return ListItem(
             Horizontal(
