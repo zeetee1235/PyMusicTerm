@@ -1,7 +1,6 @@
 import requests
 import ytmusicapi
 from dataclasses import dataclass
-from typing import Protocol
 import ytmusicapi.exceptions
 from api.lyrics import LyricsDownloader
 from PIL import Image, ImageFile
@@ -14,23 +13,8 @@ requests_cache.install_cache(
 )
 
 
-class SongData(Protocol):
-    title: str
-    duration: float
-    videoId: str
-    thumbnail: str
-    album: str
-
-    def get_formatted_artists(self) -> str:
-        """Format the list of artists to a string
-
-        Returns:
-            str: a string with the formatted artists
-        """
-
-
 @dataclass
-class SearchResult(SongData):
+class SongData:
     title: str
     artist: list[str]
     duration: str
@@ -54,7 +38,7 @@ class YTMusic:
         self.client = ytmusicapi.YTMusic()
         self.lyrics_downloader = lyrics_downloader
 
-    def search(self, query: str, filter: str = "songs") -> list[SearchResult]:
+    def search(self, query: str, filter: str = "songs") -> list[SongData]:
         """Search for a song on YTMusic
         Args:
             query (str): The query to search for
@@ -72,21 +56,33 @@ class YTMusic:
             raise TypeError(f"filter must be a string, not {type(filter)}")
 
         results = self.client.search(query, filter)
-        return [
-            SearchResult(
-                title=result["title"],
-                artist=[artist["name"] for artist in result["artists"]],
-                duration=result["duration"],
-                videoId=result["videoId"],
-                thumbnail=Image.open(
-                    requests.get(result["thumbnails"][0]["url"], stream=True).raw
-                ),
-                album=result["album"]["name"],
+        r = []
+        for result in results:
+            title: str = result.get("title", "Unknown")
+            artist: list[str] = [artist["name"] for artist in result.get("artists", [])]
+            duration: str = result.get("duration", "Unknown")
+            videoId: str = result.get("videoId", "Unknown")
+            thumbnail = Image.open(
+                requests.get(result["thumbnails"][0]["url"], stream=True).raw
             )
-            for result in results
-        ]
+            x = result.get("album", None)
+            if x:
+                album = x.get("name")
+            else:
+                album = "Unknown"
+            r.append(
+                SongData(
+                    title=title.replace("[", "").replace("]", ""),
+                    artist=artist,
+                    duration=duration,
+                    videoId=videoId,
+                    thumbnail=thumbnail,
+                    album=album,
+                )
+            )
+        return r
 
-    def get_lyrics(self, song: SearchResult) -> LyricsResult | None:
+    def get_lyrics(self, song: SongData) -> LyricsResult | None:
         """Get the lyrics of a song
         Args:
             video_id (str): The video id of the song

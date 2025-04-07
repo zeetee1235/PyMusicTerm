@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import music_tag
-from api.ytmusic import SearchResult, YTMusic
+from api.ytmusic import SongData, YTMusic
 from api.music_player import MusicPlayer
 from api.downloader import Downloader
 from player.media_control import MediaControl
@@ -40,7 +40,7 @@ class PyMusicTermPlayer:
         self.ytm = YTMusic(lyrics)
         self.downloader = Downloader(self.setting.music_dir)
         self.list_of_downloaded_songs: list[SongData] = self.get_downloaded_songs()
-        self.dict_of_song_result: dict[str, SearchResult] = {}
+        self.dict_of_song_result: dict[str, SongData] = {}
         self.current_song_index = 0
         self.current_song: SongData | None = None
 
@@ -68,7 +68,7 @@ class PyMusicTermPlayer:
             )
         return list_of_songs
 
-    def query(self, query: str, filter: str) -> list[SearchResult]:
+    def query(self, query: str, filter: str) -> list[SongData]:
         """Query the YTMusic API for a song
 
         Args:
@@ -160,6 +160,21 @@ class PyMusicTermPlayer:
                 f"Seconds must be an integer or a float, not {type(seconds)}"
             )
         self.music_player.position += seconds
+
+    def seek_to(self, seconds: float | int) -> None:
+        """Seek to a specific time
+
+        Args:
+            seconds (float | int): The time to seek in seconds
+
+        Raises:
+            TypeError: If seconds is not an integer or a float
+        """
+        if not isinstance(seconds, (int, float)):
+            raise TypeError(
+                f"Seconds must be an integer or a float, not {type(seconds)}"
+            )
+        self.music_player.position = seconds
 
     def suffle(self) -> None:
         """Shuffle the list of downloaded songs"""

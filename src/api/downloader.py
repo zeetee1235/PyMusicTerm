@@ -4,7 +4,7 @@ from pathlib import Path
 from api.notification_manager import NotificationManager
 from typing import Callable
 import music_tag
-from .ytmusic import SearchResult
+from .ytmusic import SongData
 
 from PIL import Image
 import io
@@ -21,7 +21,7 @@ def image_to_byte(image: Image) -> bytes:
 
 
 def _download_from_yt(
-    song: SearchResult,
+    song: SongData,
     download_path: str,
     callback: None | Callable[[Stream, bytes, int], None] = None,
 ) -> str | None:
@@ -80,7 +80,7 @@ class Downloader:
         self.download_path = download_path
         self.notification = NotificationManager()
 
-    def download(self, song: SearchResult) -> str | None:
+    def download(self, song: SongData) -> str | None:
         """Download a song from a song object and return the path of the downloaded file.
         If the file already exists, it will not be downloaded again and the path will be returned.
 

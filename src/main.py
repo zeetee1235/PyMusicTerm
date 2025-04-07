@@ -1,4 +1,4 @@
-from api.ytmusic import SearchResult
+from api.ytmusic import SongData
 from player.player import PyMusicTermPlayer
 from textual.app import App, ComposeResult
 from textual.widget import Widget
@@ -303,7 +303,7 @@ class PyMusicTerm(App):
         if not worker.is_cancelled:
             self.call_from_thread(self.update_search_results, results)
 
-    def update_search_results(self, results: list[SearchResult]) -> None:
+    def update_search_results(self, results: list[SongData]) -> None:
         """Update the search results
 
         Args:
@@ -315,7 +315,7 @@ class PyMusicTerm(App):
             search_results.append(self._create_song_item(result))
         search_results.loading = False
 
-    def _create_song_item(self, song: SearchResult) -> ListItem:
+    def _create_song_item(self, song: SongData) -> ListItem:
         """Create a song item for the search results
 
         Args:
@@ -324,6 +324,7 @@ class PyMusicTerm(App):
         Returns:
             ListItem: The song item
         """
+        logger.warning(str(song))
         return ListItem(
             Horizontal(
                 WidgetImage(song.thumbnail, classes="image"),
@@ -336,6 +337,10 @@ class PyMusicTerm(App):
                         song.get_formatted_artists(),
                         classes="artist",
                     ),
+                ),
+                Label(
+                    song.album,
+                    classes="album",
                 ),
                 Label(
                     song.duration,

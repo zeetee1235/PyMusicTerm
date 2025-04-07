@@ -52,6 +52,7 @@ ListItem {
     transition: background 0.3s;
 }
 
+
 .playing {
     background: $primary;
 }
