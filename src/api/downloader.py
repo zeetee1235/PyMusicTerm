@@ -1,7 +1,6 @@
 from pytubefix import YouTube, Stream
 from pydub import AudioSegment
 from pathlib import Path
-from api.notification_manager import NotificationManager
 from typing import Callable
 import music_tag
 from .ytmusic import SongData
@@ -78,7 +77,6 @@ def _delete_file(path: str) -> None:
 class Downloader:
     def __init__(self, download_path: str) -> None:
         self.download_path = download_path
-        self.notification = NotificationManager()
 
     def download(self, song: SongData) -> str | None:
         """Download a song from a song object and return the path of the downloaded file.
