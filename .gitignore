@@ -10,6 +10,8 @@ __pycache__/
 *.lock
 *.code-workspace
 
+*.sqlite
+
 # Distribution / packaging
 .Python
 build/
