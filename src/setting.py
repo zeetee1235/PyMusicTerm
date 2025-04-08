@@ -11,6 +11,7 @@ SETTING_FILE = Path(APP_DIR / "setting.toml")
 PLAYLIST_DIR = Path(APP_DIR / "playlists")
 LYRICS_DIR = Path(APP_DIR / "lyrics")
 LOG_DIR = Path(APP_DIR / "logs")
+CACHE_DIR = Path(APP_DIR / "cache")
 
 
 def fetch_files_from_folder(folder_path: str, ending: str = "mp3") -> list[str | None]:
@@ -47,6 +48,7 @@ class Setting:
     playlist_dir: str = str(PLAYLIST_DIR)
     lyrics_dir: str = str(LYRICS_DIR)
     log_dir: str = str(LOG_DIR)
+    cache_dir: str = str(CACHE_DIR)
 
 
 class SettingManager:
@@ -108,6 +110,10 @@ class SettingManager:
     def log_dir(self) -> str:
         return self._setting.log_dir
 
+    @property
+    def cache_dir(self) -> str:
+        return self._setting.cache_dir
+
     def load_setting(self) -> Setting:
         """Load settings from the setting.toml file."""
         if not SETTING_FILE.exists():
@@ -137,6 +143,7 @@ class SettingManager:
         PLAYLIST_DIR.mkdir(exist_ok=True)
         LYRICS_DIR.mkdir(exist_ok=True)
         LOG_DIR.mkdir(exist_ok=True)
+        CACHE_DIR.mkdir(exist_ok=True)
 
 
 @dataclass

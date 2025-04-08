@@ -1,3 +1,4 @@
+from datetime import timedelta
 from api.protocols import SongData
 from player.player import PyMusicTermPlayer
 from textual.app import App, ComposeResult
@@ -24,7 +25,7 @@ from loguru import logger
 from textual_image.widget import Image as WidgetImage
 from player.util import format_time
 from setting import SettingManager, rename_console
-
+import requests_cache
 # TODO : rendre plus maintenable le code existnant en refactorisant
 # TODO : renomer les fonctions pour qu'elles soient plus explicites, et pareil pour les id et classes des widgets
 # TODO : ajouter des tests unitaires
@@ -68,6 +69,9 @@ class PyMusicTerm(App):
             from player.media_control import MediaControlWin32 as MediaControl
         else:
             from player.media_control import MediaControlMPRIS as MediaControl
+        requests_cache.install_cache(
+            f"{self.setting.cache_dir}/cache", expire_after=timedelta(hours=1)
+        )
 
         self.media_control = MediaControl()
         self.player = PyMusicTermPlayer(self.setting, self.media_control)

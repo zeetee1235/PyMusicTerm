@@ -4,15 +4,8 @@ from dataclasses import dataclass
 import ytmusicapi.exceptions
 from api.lyrics import LyricsDownloader
 from PIL import Image
-import requests_cache
 
 from api.protocols import SongData
-
-
-# Set up a cache for requests
-requests_cache.install_cache(
-    "ytmusic_cache",
-)
 
 
 @dataclass
