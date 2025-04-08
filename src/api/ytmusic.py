@@ -2,7 +2,6 @@ import requests
 import ytmusicapi
 from dataclasses import dataclass
 import ytmusicapi.exceptions
-from api.lyrics import LyricsDownloader
 from PIL import Image
 
 from api.protocols import SongData
@@ -15,9 +14,8 @@ class LyricsResult:
 
 
 class YTMusic:
-    def __init__(self, lyrics_downloader: LyricsDownloader):
+    def __init__(self):
         self.client = ytmusicapi.YTMusic()
-        self.lyrics_downloader = lyrics_downloader
 
     def search(self, query: str, filter: str = "songs") -> list[SongData]:
         """Search for a song on YTMusic
@@ -62,33 +60,3 @@ class YTMusic:
                 )
             )
         return r
-
-    def get_lyrics(self, song: SongData) -> LyricsResult | None:
-        """Get the lyrics of a song
-        Args:
-            video_id (str): The video id of the song
-        Returns:
-            str: The lyrics of the song
-        """
-        lyrics_id = self.client.get_watch_playlist(song.videoId)["lyrics"]
-        try:
-            lyrics = self.client.get_lyrics(lyrics_id)
-        except ytmusicapi.exceptions.YTMusicError:
-            lyrics = None
-
-        if lyrics:
-            return self.lyrics_downloader.save(
-                LyricsResult(
-                    lyrics=lyrics["lyrics"],
-                    source=lyrics["source"],
-                ),
-                song,
-            )
-        else:
-            return self.lyrics_downloader.save(
-                LyricsResult(
-                    lyrics="None",
-                    source="None",
-                ),
-                song,
-            )

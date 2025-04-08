@@ -9,7 +9,6 @@ from player.media_control import MediaControl
 from player.util import format_time
 from setting import SettingManager, fetch_files_from_folder
 from random import shuffle
-from api.lyrics import LyricsDownloader
 
 
 class PyMusicTermPlayer:
@@ -21,8 +20,7 @@ class PyMusicTermPlayer:
         self.media_control = media_control
         self.setting = setting
         self.music_player = MusicPlayer(self.setting.volume)
-        lyrics = LyricsDownloader(self.setting.lyrics_dir)
-        self.ytm = YTMusic(lyrics)
+        self.ytm = YTMusic()
         self.downloader = Downloader(self.setting.music_dir)
         self.list_of_downloaded_songs: list[SongData] = self.get_downloaded_songs()
         self.dict_of_song_result: dict[str, SongData] = {}

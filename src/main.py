@@ -180,15 +180,6 @@ class PyMusicTerm(App):
             progress=percentage * 100,
         )
         self.player.check_if_song_ended()
-        # lyrics_results: MarkdownViewer = self.query_one("#lyrics_results")
-        # if not self.player.playing:
-        #    return
-        # self.player.dict_of_lyrics = self.player.map_lyrics_to_song()
-        # current_lyric = self.player.dict_of_lyrics[
-        #    self.player.list_of_downloaded_songs[self.player.current_song_index]
-        # ]
-        # with open(current_lyric, "r", encoding="utf-8") as f:
-        #    lyrics_results.document.update(f.read())
 
     def action_return_on_search_tab(self):
         """Set the search tab as the active tab"""

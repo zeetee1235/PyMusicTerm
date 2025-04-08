@@ -349,7 +349,6 @@ dependencies = [
     { name = "humanize" },
     { name = "just-playback" },
     { name = "loguru" },
-    { name = "mpris-server", marker = "sys_platform != 'win32'" },
     { name = "msgspec" },
     { name = "music-tag" },
     { name = "notify-py" },
@@ -361,6 +360,11 @@ dependencies = [
     { name = "textual-image", extra = ["textual"] },
     { name = "tomli-w" },
     { name = "ytmusicapi" },
+]
+
+[package.optional-dependencies]
+mpris = [
+    { name = "mpris-server", marker = "sys_platform != 'win32'" },
 ]
 
 [package.dev-dependencies]
@@ -375,7 +379,7 @@ requires-dist = [
     { name = "humanize", specifier = ">=4.12.1" },
     { name = "just-playback", specifier = ">=0.1.8" },
     { name = "loguru", specifier = ">=0.6.0" },
-    { name = "mpris-server", marker = "sys_platform != 'win32'", specifier = ">=0.9.0" },
+    { name = "mpris-server", marker = "sys_platform != 'win32' and extra == 'mpris'", specifier = ">=0.9.0" },
     { name = "msgspec", specifier = ">=0.19.0" },
     { name = "music-tag", specifier = ">=0.4.3" },
     { name = "notify-py", git = "https://github.com/ms7m/notify-py.git" },
@@ -388,6 +392,7 @@ requires-dist = [
     { name = "tomli-w", specifier = ">=1.2.0" },
     { name = "ytmusicapi", specifier = ">=1.10.1" },
 ]
+provides-extras = ["mpris"]
 
 [package.metadata.requires-dev]
 dev = [
