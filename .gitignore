@@ -12,6 +12,8 @@ __pycache__/
 
 *.sqlite
 
+.vscode/
+
 # Distribution / packaging
 .Python
 build/
