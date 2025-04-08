@@ -1,7 +1,6 @@
 import requests
 import ytmusicapi
 from dataclasses import dataclass
-import ytmusicapi.exceptions
 from PIL import Image
 
 from api.protocols import SongData

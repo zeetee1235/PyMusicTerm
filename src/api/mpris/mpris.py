@@ -1,4 +1,4 @@
-from typing import List, Protocol
+from typing import Protocol
 from mpris_server.adapters import PlayState, MprisAdapter
 from mpris_server.base import URI, MIME_TYPES
 import sys
@@ -39,11 +39,11 @@ class HAdapter(MprisAdapter):
         self.player = player
 
     @override
-    def get_uri_schemes(self) -> List[str]:
+    def get_uri_schemes(self) -> list[str]:
         return URI
 
     @override
-    def get_mime_types(self) -> List[str]:
+    def get_mime_types(self) -> list[str]:
         return MIME_TYPES
 
     @override
