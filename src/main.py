@@ -1,4 +1,4 @@
-from api.ytmusic import SongData
+from api.protocols import SongData
 from player.player import PyMusicTermPlayer
 from textual.app import App, ComposeResult
 from textual.widget import Widget

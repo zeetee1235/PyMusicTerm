@@ -3,28 +3,16 @@ import ytmusicapi
 from dataclasses import dataclass
 import ytmusicapi.exceptions
 from api.lyrics import LyricsDownloader
-from PIL import Image, ImageFile
+from PIL import Image
 import requests_cache
+
+from api.protocols import SongData
 
 
 # Set up a cache for requests
 requests_cache.install_cache(
     "ytmusic_cache",
 )
-
-
-@dataclass
-class SongData:
-    title: str
-    artist: list[str]
-    duration: str
-    videoId: str
-    thumbnail: ImageFile
-    album: str
-
-    def get_formatted_artists(self) -> str:
-        """Get the formatted artists of the song"""
-        return ", ".join([artist for artist in self.artist])
 
 
 @dataclass

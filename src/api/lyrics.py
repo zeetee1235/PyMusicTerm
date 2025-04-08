@@ -2,20 +2,13 @@ from typing import Protocol
 from dataclasses import dataclass
 from pathlib import Path
 
+from api.protocols import SongData
+
 
 @dataclass
 class LyricsData(Protocol):
     lyrics: str
     source: str
-
-
-@dataclass
-class SongData(Protocol):
-    title: str
-    duration: str
-    videoId: str
-
-    def get_formatted_artists(self) -> str: ...
 
 
 class LyricsDownloader:

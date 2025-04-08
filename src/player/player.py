@@ -1,7 +1,8 @@
 from pathlib import Path
 
 import music_tag
-from api.ytmusic import SongData, YTMusic
+from api.ytmusic import YTMusic
+from api.protocols import SongData
 from api.music_player import MusicPlayer
 from api.downloader import Downloader
 from player.media_control import MediaControl
@@ -9,22 +10,6 @@ from player.util import format_time
 from setting import SettingManager, fetch_files_from_folder
 from random import shuffle
 from api.lyrics import LyricsDownloader
-from dataclasses import dataclass
-
-
-@dataclass
-class SongData:
-    title: str
-    duration: str
-    videoId: str
-    thumbnail: str
-    album: str
-    artist: list[str]
-    path: Path
-
-    def get_formatted_artists(self) -> str:
-        """Get the formatted artists of the song"""
-        return ", ".join([artist for artist in self.artist])
 
 
 class PyMusicTermPlayer:
