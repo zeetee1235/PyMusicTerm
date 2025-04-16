@@ -106,9 +106,13 @@ class PyMusicTerm(App):
         yield Rule()
         with Vertical(classes="info_controls"):
             with Center():
-                yield Label("Unknown Title", id="label_current_song_title")
+                yield Label(
+                    "Unknown Title", id="label_current_song_title", markup=False
+                )
             with Center():
-                yield Label("Unknown Artist", id="label_current_song_artist")
+                yield Label(
+                    "Unknown Artist", id="label_current_song_artist", markup=False
+                )
         with Horizontal(classes="status_controls"):
             yield Label(
                 "--:--", id="label_current_song_position", classes="control_label"
