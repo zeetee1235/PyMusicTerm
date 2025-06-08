@@ -88,27 +88,30 @@ class PyMusicTerm(App):
 
     def compose(self) -> ComposeResult:
         with TabbedContent(classes="search_tabs", id="tabbed_content"):
-            with TabPane("Search", id="search") and Vertical():
-                yield Input(placeholder="Search for a song", id="search_input")
-                yield Select(
-                    id="search_sort",
-                    options=[
-                        ("Songs (default: Stream Youtube Music)", "songs"),
-                        ("Video (Stream Youtube Video)", "videos"),
-                    ],
-                    allow_blank=False,
-                )
-                yield ListView(id="search_results")
-            with TabPane("Playlist", id="playlist") and Vertical():
-                yield Input(placeholder="Search for a song", id="playlist_input")
-                yield ListView(id="playlist_results")
-            with TabPane("Lyrics", id="lyrics") and Vertical():
-                yield Input(placeholder="Search for a song", id="lyrics_input")
-                yield MarkdownViewer(
-                    markdown="No lyrics now",
-                    id="lyrics_results",
-                    show_table_of_contents=False,
-                )
+            with TabPane("Search", id="search"):  # noqa: SIM117
+                with Vertical():
+                    yield Input(placeholder="Search for a song", id="search_input")
+                    yield Select(
+                        id="search_sort",
+                        options=[
+                            ("Songs (default: Stream Youtube Music)", "songs"),
+                            ("Video (Stream Youtube Video)", "videos"),
+                        ],
+                        allow_blank=False,
+                    )
+                    yield ListView(id="search_results")
+            with TabPane("Playlist", id="playlist"):  # noqa: SIM117
+                with Vertical():
+                    yield Input(placeholder="Search for a song", id="playlist_input")
+                    yield ListView(id="playlist_results")
+            with TabPane("Lyrics", id="lyrics"):  # noqa: SIM117
+                with Vertical():
+                    yield Input(placeholder="Search for a song", id="lyrics_input")
+                    yield MarkdownViewer(
+                        markdown="No lyrics now",
+                        id="lyrics_results",
+                        show_table_of_contents=False,
+                    )
         yield Rule()
         with Vertical(classes="info_controls"):
             with Center():

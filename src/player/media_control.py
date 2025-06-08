@@ -1,6 +1,5 @@
 from typing import Protocol
 
-from api.mpris.mpris import HAdapter
 from setting import SettingManager
 
 setting = SettingManager()
