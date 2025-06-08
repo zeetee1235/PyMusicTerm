@@ -1,32 +1,40 @@
 from datetime import timedelta
-from api.protocols import SongData
-from player.player import PyMusicTermPlayer
+from pathlib import Path
+from typing import TYPE_CHECKING, ClassVar
+
+import requests_cache
+from loguru import logger
+from textual import on, work
 from textual.app import App, ComposeResult
-from textual.widget import Widget
+from textual.binding import Binding
+from textual.containers import Center, Horizontal, Vertical
 from textual.widgets import (
-    Input,
     Button,
-    TabbedContent,
+    Input,
     Label,
-    TabPane,
-    Rule,
-    Select,
+    ListItem,
+    ListView,
     MarkdownViewer,
     ProgressBar,
-    ListView,
-    ListItem,
+    Rule,
+    Select,
+    TabbedContent,
+    TabPane,
 )
-from textual.containers import Horizontal, Vertical, Center
-from textual import on
-from pathlib import Path
-from textual import work
-from textual.worker import get_current_worker
-from loguru import logger
+from textual.worker import Worker, get_current_worker
 from textual_image.widget import Image as WidgetImage
+
+from api.protocols import SongData
+from player.player import PyMusicTermPlayer
 from player.util import format_time
 from setting import SettingManager, rename_console
-import requests_cache
-# TODO : rendre plus maintenable le code existnant en refactorisant
+
+if TYPE_CHECKING:
+    from textual.widget import Widget
+
+    from player.media_control import MediaControlMPRIS, MediaControlWin32
+
+# TODO @Zachvfx: rendre plus maintenable le code existnant en refactorisant
 # TODO : renomer les fonctions pour qu'elles soient plus explicites, et pareil pour les id et classes des widgets
 # TODO : ajouter des tests unitaires
 # TODO : améliorer le queuing systeme
@@ -36,7 +44,7 @@ import requests_cache
 
 
 class PyMusicTerm(App):
-    BINDINGS = [
+    BINDINGS: ClassVar[list[Binding | tuple[str, str] | tuple[str, str, str]]] = [
         ("q", "seek_back", "Seek backward"),
         ("s", "play", "Play/Pause"),
         ("d", "seek_forward", "Seek forward"),
@@ -53,7 +61,7 @@ class PyMusicTerm(App):
 
     def __init__(self, setting: SettingManager) -> None:
         super().__init__(css_path="pymusicterm.tcss", watch_css=True)
-        self.setting = setting
+        self.setting: SettingManager = setting
         rename_console("PyMusicTerm")
 
         logger.remove()
@@ -70,52 +78,56 @@ class PyMusicTerm(App):
         else:
             from player.media_control import MediaControlMPRIS as MediaControl
         requests_cache.install_cache(
-            f"{self.setting.cache_dir}/cache", expire_after=timedelta(hours=1)
+            f"{self.setting.cache_dir}/cache",
+            expire_after=timedelta(hours=1),
         )
 
-        self.media_control = MediaControl()
+        self.media_control: MediaControlMPRIS | MediaControlWin32 = MediaControl()
         self.player = PyMusicTermPlayer(self.setting, self.media_control)
         self.media_control.init(self.player)
 
     def compose(self) -> ComposeResult:
         with TabbedContent(classes="search_tabs", id="tabbed_content"):
-            with TabPane("Search", id="search"):
-                with Vertical():
-                    yield Input(placeholder="Search for a song", id="search_input")
-                    yield Select(
-                        id="search_sort",
-                        options=[
-                            ("Songs (default: Stream Youtube Music)", "songs"),
-                            ("Video (Stream Youtube Video)", "videos"),
-                        ],
-                        allow_blank=False,
-                    )
-                    yield ListView(id="search_results")
-            with TabPane("Playlist", id="playlist"):
-                with Vertical():
-                    yield Input(placeholder="Search for a song", id="playlist_input")
-                    yield ListView(id="playlist_results")
-            with TabPane("Lyrics", id="lyrics"):
-                with Vertical():
-                    yield Input(placeholder="Search for a song", id="lyrics_input")
-                    yield MarkdownViewer(
-                        markdown="No lyrics now",
-                        id="lyrics_results",
-                        show_table_of_contents=False,
-                    )
+            with TabPane("Search", id="search") and Vertical():
+                yield Input(placeholder="Search for a song", id="search_input")
+                yield Select(
+                    id="search_sort",
+                    options=[
+                        ("Songs (default: Stream Youtube Music)", "songs"),
+                        ("Video (Stream Youtube Video)", "videos"),
+                    ],
+                    allow_blank=False,
+                )
+                yield ListView(id="search_results")
+            with TabPane("Playlist", id="playlist") and Vertical():
+                yield Input(placeholder="Search for a song", id="playlist_input")
+                yield ListView(id="playlist_results")
+            with TabPane("Lyrics", id="lyrics") and Vertical():
+                yield Input(placeholder="Search for a song", id="lyrics_input")
+                yield MarkdownViewer(
+                    markdown="No lyrics now",
+                    id="lyrics_results",
+                    show_table_of_contents=False,
+                )
         yield Rule()
         with Vertical(classes="info_controls"):
             with Center():
                 yield Label(
-                    "Unknown Title", id="label_current_song_title", markup=False
+                    "Unknown Title",
+                    id="label_current_song_title",
+                    markup=False,
                 )
             with Center():
                 yield Label(
-                    "Unknown Artist", id="label_current_song_artist", markup=False
+                    "Unknown Artist",
+                    id="label_current_song_artist",
+                    markup=False,
                 )
         with Horizontal(classes="status_controls"):
             yield Label(
-                "--:--", id="label_current_song_position", classes="control_label"
+                "--:--",
+                id="label_current_song_position",
+                classes="control_label",
             )
             yield ProgressBar(
                 total=100,
@@ -134,14 +146,16 @@ class PyMusicTerm(App):
 
     @on(TabbedContent.TabActivated)
     def action_select_playlist_tab(self, event: TabbedContent.TabActivated) -> None:
-        """Action when the tab is activated. If the tab is playlist, clear the options and add the songs to the playlist.
+        """
+        Action when the tab is activated. If the tab is playlist, clear the options and add the songs to the playlist.
 
         Args:
             event (TabbedContent.TabActivated): The event that triggered the action
+
         """
         playlist_results: ListView = self.query_one("#playlist_results")
         if event.tab.id.endswith("playlist"):
-            children_id = [
+            children_id: list[str] = [
                 child.id.removeprefix("id-") for child in playlist_results.children
             ]
             for song in self.player.list_of_downloaded_songs:
@@ -149,35 +163,35 @@ class PyMusicTerm(App):
                     playlist_results.append(self._create_song_item(song))
 
     def update_time(self) -> None:
-        """Update the time label of the player, and update the player"""
+        """Update the time label of the player, and update the player."""
         progress_bar: ProgressBar = self.query_one("#player_status")
         label_current_song_position: Label = self.query_one(
-            "#label_current_song_position"
+            "#label_current_song_position",
         )
         label_song_length: Label = self.query_one("#label_song_length")
-        length_float = self.player.song_length
-        current_float = self.player.position
+        length_float: float = self.player.song_length
+        current_float: float = self.player.position
         label_current_song_position.update(format_time(current_float))
         label_song_length.update(format_time(length_float))
         if self.player.playing:
             label_current_song_title: Label = self.query_one(
-                "#label_current_song_title"
+                "#label_current_song_title",
             )
             label_current_song_artist: Label = self.query_one(
-                "#label_current_song_artist"
+                "#label_current_song_artist",
             )
             label_current_song_title.update(
                 self.player.list_of_downloaded_songs[
                     self.player.current_song_index
-                ].title
+                ].title,
             )
             label_current_song_artist.update(
                 self.player.list_of_downloaded_songs[
                     self.player.current_song_index
-                ].get_formatted_artists()
+                ].get_formatted_artists(),
             )
         try:
-            percentage = current_float / length_float
+            percentage: float = current_float / length_float
         except ZeroDivisionError:
             percentage = 0.01
         progress_bar.update(
@@ -185,32 +199,34 @@ class PyMusicTerm(App):
         )
         self.player.check_if_song_ended()
 
-    def action_return_on_search_tab(self):
-        """Set the search tab as the active tab"""
+    def action_return_on_search_tab(self) -> None:
+        """Set the search tab as the active tab."""
         tab: TabbedContent = self.query_one("#tabbed_content")
         tab.active = "search"
 
-    def action_return_on_playlist_tab(self):
-        """Set the playlist tab as the active tab"""
+    def action_return_on_playlist_tab(self) -> None:
+        """Set the playlist tab as the active tab."""
         tab: TabbedContent = self.query_one("#tabbed_content")
         tab.active = "playlist"
 
-    def action_return_on_lyrics_tab(self):
-        """Set the lyrics tab as the active tab"""
+    def action_return_on_lyrics_tab(self) -> None:
+        """Set the lyrics tab as the active tab."""
         tab: TabbedContent = self.query_one("#tabbed_content")
         tab.active = "lyrics"
 
     @on(ListView.Selected, "#playlist_results")
     def select_playlist_result(self, event: ListView.Selected) -> None:
-        """Select a song from the playlist results and play it"""
+        """Select a song from the playlist results and play it."""
         id = event.item.id.removeprefix("id-")
         self.play_from_id(id)
 
     def play_from_id(self, ids: str) -> None:
-        """Play a song from the playlist results and play it
+        """
+        Play a song from the playlist results and play it.
 
         Args:
-            id (str): The id of the song to play
+            ids (str): The id of the song to play
+
         """
         for i, song in enumerate(self.player.list_of_downloaded_songs):
             if song.videoId == ids:
@@ -219,21 +235,21 @@ class PyMusicTerm(App):
 
     @on(ListView.Selected, "#search_results")
     def select_result(self, event: ListView.Selected) -> None:
-        """Select a song from the search results and play it"""
-        video_id = str(event.item.id).removeprefix("id-")
+        """Select a song from the search results and play it."""
+        video_id: str = str(event.item.id).removeprefix("id-")
         self.player.play_from_ytb(video_id)
         self.toggle_button()
 
     @on(Button.Pressed, "#previous")
     def action_previous(self) -> None:
-        """Play the previous song"""
+        """Play the previous song."""
         self.toggle_button()
         playlist_results: ListView = self.query_one("#playlist_results")
         playlist_results.index = self.player.previous()
 
     @on(Button.Pressed, "#play_pause")
     def action_play(self) -> None:
-        """Play or pause the song"""
+        """Play or pause the song."""
         if self.player.playing:
             self.player.pause_song()
         else:
@@ -241,7 +257,7 @@ class PyMusicTerm(App):
         self.toggle_button()
 
     def toggle_button(self) -> None:
-        """Toggle the play button label and start the timer if it's not running"""
+        """Toggle the play button label and start the timer if it's not running."""
         button: Button = self.query_one("#play_pause")
         if self.player.playing:
             button.label = "󰏤"
@@ -252,14 +268,14 @@ class PyMusicTerm(App):
 
     @on(Button.Pressed, "#next")
     def action_next(self) -> None:
-        """Play the next song"""
+        """Play the next song."""
         self.toggle_button()
         playlist_results: ListView = self.query_one("#playlist_results")
         playlist_results.index = self.player.next()
 
     @on(Button.Pressed, "#shuffle")
     def action_shuffle(self) -> None:
-        """Shuffle the list of downloaded songs"""
+        """Shuffle the list of downloaded songs."""
         self.player.suffle()
         playlist_results: ListView = self.query_one("#playlist_results")
         playlist_results.clear()
@@ -270,7 +286,7 @@ class PyMusicTerm(App):
 
     @on(Button.Pressed, "#loop")
     def action_loop(self) -> None:
-        """Toggle the loop button"""
+        """Toggle the loop button."""
         loop_button: Button = self.query_one("#loop")
         is_looping = self.player.loop_at_end()
         if is_looping:
@@ -280,7 +296,7 @@ class PyMusicTerm(App):
 
     @on(Input.Submitted, "#search_input")
     def search(self) -> None:
-        """Search for a song on YTMusic and display the results"""
+        """Search for a song on YTMusic and display the results."""
         search_results: ListView = self.query_one("#search_results")
         search_results.clear()
         search_input: Input = self.query_one("#search_input")
@@ -291,22 +307,26 @@ class PyMusicTerm(App):
 
     @work(exclusive=True, thread=True)
     def search_ytb_thread(self, query: str) -> None:
-        """Start a thread to search for a song on YTMusic
+        """
+        Start a thread to search for a song on YTMusic.
 
         Args:
             query (str): The search query
+
         """
-        worker = get_current_worker()
-        filter: Select = self.query_one("#search_sort")
-        results = self.player.query(query, filter.value)
+        worker: Worker = get_current_worker()
+        filters: Select = self.query_one("#search_sort")
+        results: list[SongData] = self.player.query(query, filters.value)
         if not worker.is_cancelled:
             self.call_from_thread(self.update_search_results, results)
 
     def update_search_results(self, results: list[SongData]) -> None:
-        """Update the search results
+        """
+        Update the search results.
 
         Args:
             results (list): The list of results from youtube music
+
         """
         search_results: ListView = self.query_one("#search_results")
         search_results.clear()
@@ -315,15 +335,16 @@ class PyMusicTerm(App):
         search_results.loading = False
 
     def _create_song_item(self, song: SongData) -> ListItem:
-        """Create a song item for the search results
+        """
+        Create a song item for the search results.
 
         Args:
             song (SearchResult): The song to create the item for
 
         Returns:
             ListItem: The song item
-        """
 
+        """
         return ListItem(
             Horizontal(
                 WidgetImage(song.thumbnail, classes="image"),
@@ -355,26 +376,25 @@ class PyMusicTerm(App):
         )
 
     def action_seek_back(self) -> None:
-        """Seek backward 10 seconds"""
+        """Seek backward 10 seconds."""
         self.player.seek(-10)
 
     def action_seek_forward(self) -> None:
-        """Seek forward 10 seconds"""
+        """Seek forward 10 seconds."""
         self.player.seek(10)
 
     def action_volume(self, volume: float) -> None:
-        """Increase the volume"""
+        """Increase the volume."""
         self.player.volume(volume)
         self.notify(f"Volume changed to {self.player.music_player.volume:.2f}")
 
 
 @logger.catch
-def main():
+def main() -> None:
     setting = SettingManager()
     app = PyMusicTerm(setting)
     app.run()
 
 
 if __name__ == "__main__":
-    print("Starting PyMusicTerm...")
     main()

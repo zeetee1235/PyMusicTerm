@@ -1,21 +1,19 @@
+from typing import ClassVar
+
 from just_playback import Playback
 
 
-class InvalidFileType(Exception):
-    pass
-
-
 class Singleton(type):
-    _instances = {}
+    _instances: ClassVar[dict[type, object]] = {}
 
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args, **kwargs) -> object:
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
 class MusicPlayer(metaclass=Singleton):
-    def __init__(self, default_volume: float = 0.5):
+    def __init__(self, default_volume: float = 0.5) -> None:
         self.playback = Playback()
         self.playback.set_volume(default_volume)
         self._loop_at_end = False
@@ -47,7 +45,7 @@ class MusicPlayer(metaclass=Singleton):
 
     @loop_at_end.setter
     def loop_at_end(self, value: bool) -> None:
-        self._loop_at_end = value
+        self._loop_at_end: bool = value
         self.playback.loop_at_end(value)
 
     @property
@@ -55,7 +53,7 @@ class MusicPlayer(metaclass=Singleton):
         return self.playback.volume
 
     @volume.setter
-    def volume(self, volume: float):
+    def volume(self, volume: float) -> None:
         self.playback.set_volume(volume)
 
     @property

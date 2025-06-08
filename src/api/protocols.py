@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from PIL import ImageFile
 
 
@@ -13,5 +14,5 @@ class SongData:
     path: None | str = None
 
     def get_formatted_artists(self) -> str:
-        """Get the formatted artists of the song"""
-        return ", ".join([artist for artist in self.artist])
+        """Get the formatted artists of the song."""
+        return ", ".join(list(self.artist))

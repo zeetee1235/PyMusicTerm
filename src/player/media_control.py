@@ -1,5 +1,6 @@
 from typing import Protocol
 
+from api.mpris.mpris import HAdapter
 from setting import SettingManager
 
 setting = SettingManager()
@@ -8,6 +9,7 @@ if setting.os == "win32":
 else:
     from mpris_server import EventAdapter
     from mpris_server import Server as ServerMpris
+
     from api.mpris.mpris import HAdapter
 
 
@@ -37,15 +39,15 @@ class MediaControlWin32(MediaControl):
 
 class MediaControlMPRIS(MediaControl):
     def __init__(self) -> None:
-        self.adapter = HAdapter()
+        self.adapter: HAdapter = HAdapter()
         self.mpris = ServerMpris(name="PyMusicTerm", adapter=self.adapter)
         self.event = EventAdapter(root=self.mpris.root, player=self.mpris.player)
 
-    def init(self, player):
+    def init(self, player) -> None:
         self.adapter.setup(player)
         self.mpris.loop(background=True)
 
-    def on_playback(self):
+    def on_playback(self) -> None:
         return self.event.on_playback()
 
     def on_playpause(self):

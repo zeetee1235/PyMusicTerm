@@ -1,10 +1,11 @@
-from dataclasses import dataclass
-from pathlib import Path
-from msgspec import toml
 import os
 import sys
+from dataclasses import dataclass
+from pathlib import Path
 
-HOME = Path.home()
+from msgspec import toml
+
+HOME: Path = Path.home()
 APP_DIR = Path(HOME / ".pymusicterm")
 MUSIC_DIR = Path(APP_DIR / "musics")
 SETTING_FILE = Path(APP_DIR / "setting.toml")
@@ -15,29 +16,38 @@ CACHE_DIR = Path(APP_DIR / "cache")
 
 
 def fetch_files_from_folder(folder_path: str, ending: str = "mp3") -> list[str | None]:
-    """Fetch all the files from a folder
+    """
+    Fetch all the files from a folder.
+
     Args:
         folder_path (str): The path of the folder
         ending (str): The ending of the files to fetch. Defaults to "mp3"
     Returns:
         list[str]: The list of file found
+
     """
     if not isinstance(folder_path, str):
-        raise TypeError(f"folder_path must be a string, not {type(folder_path)}")
+        msg: str = f"folder_path must be a string, not {type(folder_path)}"
+        raise TypeError(msg)
     if not isinstance(ending, str):
-        raise TypeError(f"ending must be a string, not {type(ending)}")
+        msg: str = f"ending must be a string, not {type(ending)}"
+        raise TypeError(msg)
     return [str(file) for file in Path(folder_path).glob(f"*.{ending}")]
 
 
-def resource_path(relative_path):
-    """Get absolute path to resource, works for dev and for PyInstaller"""
-    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
+def resource_path(relative_path: str) -> str:
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    base_path: Path | str = getattr(
+        sys,
+        "_MEIPASS",
+        Path.parent(Path.resolve(__file__)),
+    )
+    return Path(base_path, relative_path).resolve()
 
 
 @dataclass
 class Setting:
-    """All the settings of the app"""
+    """All the settings of the app."""
 
     volume: float = 1.0
     loop: bool = False
@@ -54,10 +64,10 @@ class Setting:
 class SettingManager:
     """Manages the settings of the app."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._setting = None
         self.check_and_create_paths()
-        self._setting = self.load_setting()
+        self._setting: Setting = self.load_setting()
 
     @property
     def os(self) -> str:
@@ -121,7 +131,7 @@ class SettingManager:
             self.save_setting()
 
         try:
-            with open(SETTING_FILE, "rb") as f:
+            with SETTING_FILE.open("rb") as f:
                 return toml.decode(f.read(), type=Setting)
         except Exception as e:
             print(f"Error loading settings: {e}")
@@ -130,8 +140,8 @@ class SettingManager:
     def save_setting(self) -> None:
         """Save the current settings to the setting.toml file."""
         try:
-            with open(SETTING_FILE, "wb") as f:
-                encoded = toml.encode(self._setting)
+            with SETTING_FILE.open("wb") as f:
+                encoded: bytes = toml.encode(self._setting)
                 f.write(encoded)
         except Exception as e:
             print(f"Error saving settings: {e}")
@@ -148,7 +158,7 @@ class SettingManager:
 
 @dataclass
 class KeyBinding:
-    """All the keybindings of the app"""
+    """All the keybindings of the app."""
 
     volume_up: str = "k"
     volume_down: str = "j"
@@ -158,17 +168,23 @@ class KeyBinding:
 
 
 def rename_console(name: str, platform: str = sys.platform) -> None:
-    """Rename the console
+    """
+    Rename the console.
 
     Args:
         name (str): The new name of the console (for linux and windows)
+        platform (str): The platform of the console (win32 or linux)
+
     """
     if not isinstance(name, str):
-        raise TypeError(f"name must be a string, not {type(name)}")
+        msg: str = f"name must be a string, not {type(name)}"
+        raise TypeError(msg)
     if platform not in ("win32", "linux"):
-        raise ValueError(f"platform must be 'win32' or 'linux', not {platform}")
+        msg: str = f"platform must be 'win32' or 'linux', not {platform}"
+        raise ValueError(msg)
     if platform == "win32":
-        os.system(f"title {name}")
+        command: str = f"title {name}"
+        os.system(command)
     else:
         print(f"\33]0;{name}\a", end="", flush=True)
 
