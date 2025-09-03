@@ -1,10 +1,11 @@
+import asyncio
 from datetime import timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import requests_cache
 from loguru import logger
-from textual import on, work
+from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Center, Horizontal, Vertical
@@ -21,7 +22,6 @@ from textual.widgets import (
     TabbedContent,
     TabPane,
 )
-from textual.worker import Worker, get_current_worker
 from textual_image.widget import Image as WidgetImage
 
 from api.protocols import SongData
@@ -148,7 +148,10 @@ class PyMusicTerm(App):
             yield Button("󰛤", id="loop")
 
     @on(TabbedContent.TabActivated)
-    def action_select_playlist_tab(self, event: TabbedContent.TabActivated) -> None:
+    async def action_select_playlist_tab(
+        self,
+        event: TabbedContent.TabActivated | None,
+    ) -> None:
         """
         Action when the tab is activated. If the tab is playlist, clear the options and add the songs to the playlist.
 
@@ -157,15 +160,15 @@ class PyMusicTerm(App):
 
         """
         playlist_results: ListView = self.query_one("#playlist_results")
-        if event.tab.id.endswith("playlist"):
+        if event is None or event.tab.id.endswith("playlist"):
             children_id: list[str] = [
                 child.id.removeprefix("id-") for child in playlist_results.children
             ]
             for song in self.player.list_of_downloaded_songs:
                 if song.videoId not in children_id:
-                    playlist_results.append(self._create_song_item(song))
+                    await playlist_results.append(await self._create_song_item(song))
 
-    def update_time(self) -> None:
+    async def update_time(self) -> None:
         """Update the time label of the player, and update the player."""
         progress_bar: ProgressBar = self.query_one("#player_status")
         label_current_song_position: Label = self.query_one(
@@ -200,30 +203,31 @@ class PyMusicTerm(App):
         progress_bar.update(
             progress=percentage * 100,
         )
-        self.player.check_if_song_ended()
+        if self.player.check_if_song_ended():
+            await self.action_next()
 
-    def action_return_on_search_tab(self) -> None:
+    async def action_return_on_search_tab(self) -> None:
         """Set the search tab as the active tab."""
         tab: TabbedContent = self.query_one("#tabbed_content")
         tab.active = "search"
 
-    def action_return_on_playlist_tab(self) -> None:
+    async def action_return_on_playlist_tab(self) -> None:
         """Set the playlist tab as the active tab."""
         tab: TabbedContent = self.query_one("#tabbed_content")
         tab.active = "playlist"
 
-    def action_return_on_lyrics_tab(self) -> None:
+    async def action_return_on_lyrics_tab(self) -> None:
         """Set the lyrics tab as the active tab."""
         tab: TabbedContent = self.query_one("#tabbed_content")
         tab.active = "lyrics"
 
     @on(ListView.Selected, "#playlist_results")
-    def select_playlist_result(self, event: ListView.Selected) -> None:
+    async def select_playlist_result(self, event: ListView.Selected) -> None:
         """Select a song from the playlist results and play it."""
-        id = event.item.id.removeprefix("id-")
-        self.play_from_id(id)
+        id: str = event.item.id.removeprefix("id-")
+        await self.play_from_id(id)
 
-    def play_from_id(self, ids: str) -> None:
+    async def play_from_id(self, ids: str) -> None:
         """
         Play a song from the playlist results and play it.
 
@@ -234,32 +238,32 @@ class PyMusicTerm(App):
         for i, song in enumerate(self.player.list_of_downloaded_songs):
             if song.videoId == ids:
                 self.player.play_from_list(i)
-                self.toggle_button()
+                await self.toggle_button()
 
     @on(ListView.Selected, "#search_results")
-    def select_result(self, event: ListView.Selected) -> None:
+    async def select_result(self, event: ListView.Selected) -> None:
         """Select a song from the search results and play it."""
         video_id: str = str(event.item.id).removeprefix("id-")
         self.player.play_from_ytb(video_id)
-        self.toggle_button()
+        await self.toggle_button()
 
     @on(Button.Pressed, "#previous")
-    def action_previous(self) -> None:
+    async def action_previous(self) -> None:
         """Play the previous song."""
-        self.toggle_button()
+        await self.toggle_button()
         playlist_results: ListView = self.query_one("#playlist_results")
         playlist_results.index = self.player.previous()
 
     @on(Button.Pressed, "#play_pause")
-    def action_play(self) -> None:
+    async def action_play(self) -> None:
         """Play or pause the song."""
         if self.player.playing:
             self.player.pause_song()
         else:
             self.player.resume_song()
-        self.toggle_button()
+        await self.toggle_button()
 
-    def toggle_button(self) -> None:
+    async def toggle_button(self) -> None:
         """Toggle the play button label and start the timer if it's not running."""
         button: Button = self.query_one("#play_pause")
         if self.player.playing:
@@ -267,28 +271,30 @@ class PyMusicTerm(App):
         else:
             button.label = "󰐊"
         if self.timer is None:
-            self.timer = self.set_interval(0.1, self.update_time, name="update_time")
+            self.timer = self.set_interval(
+                0.1,
+                self.update_time,
+                name="update_time",
+            )
 
     @on(Button.Pressed, "#next")
-    def action_next(self) -> None:
+    async def action_next(self) -> None:
         """Play the next song."""
         self.toggle_button()
         playlist_results: ListView = self.query_one("#playlist_results")
         playlist_results.index = self.player.next()
 
     @on(Button.Pressed, "#shuffle")
-    def action_shuffle(self) -> None:
+    async def action_shuffle(self) -> None:
         """Shuffle the list of downloaded songs."""
-        self.player.suffle()
         playlist_results: ListView = self.query_one("#playlist_results")
-        playlist_results.clear()
-        for i, song in enumerate(self.player.list_of_downloaded_songs):
-            ListItem(
-                Label(f"{i + 1}. {song.title} - {song.get_formatted_artists()}"),
-            )
+        await playlist_results.clear()
+
+        self.player.suffle()
+        await self.action_select_playlist_tab(None)
 
     @on(Button.Pressed, "#loop")
-    def action_loop(self) -> None:
+    async def action_loop(self) -> None:
         """Toggle the loop button."""
         loop_button: Button = self.query_one("#loop")
         is_looping = self.player.loop_at_end()
@@ -298,46 +304,26 @@ class PyMusicTerm(App):
             loop_button.variant = "default"
 
     @on(Input.Submitted, "#search_input")
-    def search(self) -> None:
-        """Search for a song on YTMusic and display the results."""
+    async def search(self) -> None:
+        """Search asynchronously on YTMusic."""
         search_results: ListView = self.query_one("#search_results")
-        search_results.clear()
+        await search_results.clear()
         search_input: Input = self.query_one("#search_input")
         if search_input.value == "":
             return
         search_results.loading = True
-        self.search_ytb_thread(search_input.value)
-
-    @work(exclusive=True, thread=True)
-    def search_ytb_thread(self, query: str) -> None:
-        """
-        Start a thread to search for a song on YTMusic.
-
-        Args:
-            query (str): The search query
-
-        """
-        worker: Worker = get_current_worker()
         filters: Select = self.query_one("#search_sort")
-        results: list[SongData] = self.player.query(query, filters.value)
-        if not worker.is_cancelled:
-            self.call_from_thread(self.update_search_results, results)
-
-    def update_search_results(self, results: list[SongData]) -> None:
-        """
-        Update the search results.
-
-        Args:
-            results (list): The list of results from youtube music
-
-        """
+        results: list[SongData] = self.player.query(
+            search_input.value,
+            filters.value,
+        )
         search_results: ListView = self.query_one("#search_results")
-        search_results.clear()
+        await search_results.clear()
         for result in results:
-            search_results.append(self._create_song_item(result))
+            search_results.append(await self._create_song_item(result))
         search_results.loading = False
 
-    def _create_song_item(self, song: SongData) -> ListItem:
+    async def _create_song_item(self, song: SongData) -> ListItem:
         """
         Create a song item for the search results.
 
@@ -378,26 +364,26 @@ class PyMusicTerm(App):
             classes="song_item",
         )
 
-    def action_seek_back(self) -> None:
+    async def action_seek_back(self) -> None:
         """Seek backward 10 seconds."""
         self.player.seek(-10)
 
-    def action_seek_forward(self) -> None:
+    async def action_seek_forward(self) -> None:
         """Seek forward 10 seconds."""
         self.player.seek(10)
 
-    def action_volume(self, volume: float) -> None:
+    async def action_volume(self, volume: float) -> None:
         """Increase the volume."""
         self.player.volume(volume)
         self.notify(f"Volume changed to {self.player.music_player.volume:.2f}")
 
 
 @logger.catch
-def main() -> None:
+async def main() -> None:
     setting = SettingManager()
     app = PyMusicTerm(setting)
-    app.run()
+    await app.run_async()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
