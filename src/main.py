@@ -9,6 +9,7 @@ from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Center, Horizontal, Vertical
+from textual.widget import Widget
 from textual.widgets import (
     Button,
     Input,
@@ -170,6 +171,11 @@ class PyMusicTerm(App):
 
     async def update_time(self) -> None:
         """Update the time label of the player, and update the player."""
+        button: Button = self.query_one("#play_pause")
+        if self.player.playing:
+            button.label = "󰏤"
+        else:
+            button.label = "󰐊"
         progress_bar: ProgressBar = self.query_one("#player_status")
         label_current_song_position: Label = self.query_one(
             "#label_current_song_position",

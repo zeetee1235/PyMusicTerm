@@ -29,13 +29,6 @@ class PyMusicTermPlayer:
         self.current_song: SongData | None = None
 
     def get_downloaded_songs(self) -> list[SongData]:
-        """
-        Get the list of downloaded songs.
-
-        Returns:
-            list[Song]: the list of downloaded songs
-
-        """
         songs: list[str | None] = fetch_files_from_folder(self.setting.music_dir, "mp3")
         list_of_songs: list[SongData] = []
         for song in songs:
@@ -55,17 +48,6 @@ class PyMusicTermPlayer:
         return list_of_songs
 
     def query(self, query: str, filter: str) -> list[SongData]:
-        """
-        Query the YTMusic API for a song.
-
-        Args:
-            query (str): the query to search for
-            filter (str): the filter to use
-
-        Returns:
-            list[SearchSongResult | SearchVideoResult]: the list of the results found
-
-        """
         result: list[SongData] = self.ytm.search(query, filter)
 
         self.dict_of_song_result.clear()
@@ -76,10 +58,6 @@ class PyMusicTermPlayer:
     def play_from_ytb(self, video_id: str) -> None:
         """
         Play a song from the YTMusic API, it will download the song first then play it.
-
-        Args:
-            video_id (int): the video id of the song to play
-
         """
         song: SongData = self.dict_of_song_result[video_id]
         path: str | None = self.downloader.download(song)
@@ -89,18 +67,12 @@ class PyMusicTermPlayer:
         self.list_of_downloaded_songs = self.get_downloaded_songs()
         self.music_player.load_song(str(path))
         self.music_player.play_song()
+        self.media_control.set_current_song(self.current_song_index)
         self.media_control.on_playback()
 
     def play_from_list(self, id: int) -> None:
         """
         Play a song from the list of downloaded songs.
-
-        Args:
-            id (int): the index of the song to play
-
-        Raises:
-            TypeError: If id is not an integer
-
         """
         if not isinstance(id, int):
             msg: str = f"id must be an integer, not {type(id)}"
@@ -109,6 +81,7 @@ class PyMusicTermPlayer:
         self.current_song = self.list_of_downloaded_songs[id]
         self.music_player.load_song(self.list_of_downloaded_songs[id].path)
         self.music_player.play_song()
+        self.media_control.set_current_song(self.current_song_index)
         self.media_control.on_playback()
 
     def previous(self) -> int:
@@ -139,32 +112,13 @@ class PyMusicTermPlayer:
         return self.current_song_index
 
     def seek(self, seconds: float = 10) -> None:
-        """
-        Seek forward or backward.
-
-        Args:
-            seconds (float, optional): The time to seek in seconds. Defaults to 10.
-
-        Raises:
-            TypeError: If seconds is not an integer or a float
-
-        """
+        """Seek forward or backward."""
         if not isinstance(seconds, int | float):
             msg: str = f"Seconds must be an integer or a float, not {type(seconds)}"
             raise TypeError(msg)
         self.music_player.position += seconds
 
     def seek_to(self, seconds: float) -> None:
-        """
-        Seek to a specific time.
-
-        Args:
-            seconds (float | int): The time to seek in seconds
-
-        Raises:
-            TypeError: If seconds is not an integer or a float
-
-        """
         if not isinstance(seconds, int | float):
             msg: str = f"Seconds must be an integer or a float, not {type(seconds)}"
             raise TypeError(msg)
@@ -180,6 +134,8 @@ class PyMusicTermPlayer:
         else:
             self.current_song_index = 0
             self.current_song = self.list_of_downloaded_songs[self.current_song_index]
+        self.media_control.populate_playlist()
+        self.media_control.set_current_song(self.current_song_index)
 
     def loop_at_end(self) -> bool:
         """Loop at the end."""

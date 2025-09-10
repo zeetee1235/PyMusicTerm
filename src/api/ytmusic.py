@@ -34,9 +34,11 @@ class YTMusic:
 
         """
         if not isinstance(query, str):
-            raise TypeError(f"query must be a string, not {type(query)}")
+            msg: str = f"query must be a string, not {type(query)}"
+            raise TypeError(msg)
         if not isinstance(filter, str):
-            raise TypeError(f"filter must be a string, not {type(filter)}")
+            msg = f"filter must be a string, not {type(filter)}"
+            raise TypeError(msg)
 
         results: list[dict] = self.client.search(query, filter)
         r: list[SongData] = []

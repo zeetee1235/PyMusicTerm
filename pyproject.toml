@@ -20,6 +20,15 @@ dependencies = [
     "music-tag>=0.4.3",
     "requests-cache>=1.2.1",
     "pyinstaller>=6.12.0",
+    "winrt-windows-foundation>=3.2.1; sys_platform == 'win32'",
+    "winrt-windows-media-playback>=3.2.1; sys_platform == 'win32'",
+    "winrt-windows-data-xml-dom>=3.2.1; sys_platform == 'win32'",
+    "winrt-windows-ui-notifications>=3.2.1; sys_platform == 'win32'",
+    "winrt-windows-media-core>=3.2.1; sys_platform == 'win32'",
+    "winrt-windows-media>=3.2.1; sys_platform == 'win32'",
+    "winrt-windows-storage>=3.2.1; sys_platform == 'win32'",
+    "winrt-windows-storage-streams>=3.2.1; sys_platform == 'win32'",
+    "winrt-windows-foundation-collections>=3.2.1; sys_platform == 'win32'",
 ]
 
 [tool.pytest.ini_options]
