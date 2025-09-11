@@ -231,13 +231,6 @@ class PyMusicTerm(App):
         await self.play_from_id(id_)
 
     async def play_from_id(self, ids: str) -> None:
-        """
-        Play a song from the playlist results and play it.
-
-        Args:
-            ids (str): The id of the song to play
-
-        """
         for i, song in enumerate(self.player.list_of_downloaded_songs):
             if song.video_id == ids:
                 self.player.play_from_list(i)
@@ -306,8 +299,24 @@ class PyMusicTerm(App):
         else:
             loop_button.variant = "default"
 
+    @on(Input.Changed, "#playlist_input")
+    async def search_playlist(self) -> None:
+        """Search asynchronously on YTMusic."""
+        playlist_results: ListView = self.query_one("#playlist_results")
+        playlist_input: Input = self.query_one("#playlist_input")
+        if playlist_input.value == "":
+            await self.action_select_playlist_tab(None)
+            return
+        await playlist_results.clear()
+        for song in self.player.list_of_downloaded_songs:
+            if (
+                playlist_input.value.lower() in song.title.lower()
+                or playlist_input.value.lower() in song.get_formatted_artists().lower()
+            ):
+                playlist_results.append(await self._create_song_item(song))
+
     @on(Input.Submitted, "#search_input")
-    async def search(self) -> None:
+    async def search_ytb(self) -> None:
         """Search asynchronously on YTMusic."""
         search_results: ListView = self.query_one("#search_results")
         await search_results.clear()
@@ -327,16 +336,6 @@ class PyMusicTerm(App):
         search_results.loading = False
 
     async def _create_song_item(self, song: SongData) -> ListItem:
-        """
-        Create a song item for the search results.
-
-        Args:
-            song (SearchResult): The song to create the item for
-
-        Returns:
-            ListItem: The song item
-
-        """
         return ListItem(
             Horizontal(
                 WidgetImage(song.thumbnail, classes="image"),
