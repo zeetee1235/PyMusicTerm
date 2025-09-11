@@ -1,10 +1,7 @@
-from winrt._winrt_windows_foundation import Uri
-from winrt._winrt_windows_media_core import MediaSource
-from winrt._winrt_windows_media_playback import (
-    MediaItemDisplayProperties,
-    MediaPlaybackItem,
-)
-from winrt._winrt_windows_storage import StorageFile
+from pathlib import Path
+
+from loguru import logger
+from PIL import Image
 from winrt.windows.foundation import Uri
 from winrt.windows.media import (
     MediaPlaybackStatus,
@@ -14,6 +11,7 @@ from winrt.windows.media import (
 )
 from winrt.windows.media.core import MediaSource
 from winrt.windows.media.playback import (
+    MediaItemDisplayProperties,
     MediaPlaybackItem,
     MediaPlaybackList,
     MediaPlayer,
@@ -21,15 +19,20 @@ from winrt.windows.media.playback import (
 from winrt.windows.storage import StorageFile
 from winrt.windows.storage.streams import RandomAccessStreamReference
 
+from api.protocols import PyMusicTermPlayer
+from setting import Setting
+
+setting = Setting()
+
 
 class MediaControlWin32:
     def __init__(self) -> None:
-        self.player: Any = None
+        self.player: PyMusicTermPlayer | None = None
         self.media_player: MediaPlayer | None = None
         self.smtc: SystemMediaTransportControls | None = None
         self.playlist: MediaPlaybackList | None = None
 
-    def init(self, player: Any) -> None:
+    def init(self, player: PyMusicTermPlayer) -> None:
         """Attach SMTC to the PyMusicTermPlayer"""
         try:
             self.player = player
@@ -86,14 +89,14 @@ class MediaControlWin32:
                 display_props.type = MediaPlaybackType.MUSIC
                 display_props.music_properties.title = song.title or "Unknown Title"
                 display_props.music_properties.artist = (
-                    ", ".join([song.get_formatted_artists()]) or "Unknown Artist"
+                    song.get_formatted_artists() or "Unknown Artist"
                 )
                 display_props.music_properties.album_title = ""
 
                 try:
                     display_props.thumbnail = self.get_ras_from_pil(
                         song.thumbnail,
-                        song.videoId,
+                        song.video_id,
                     )
                 except Exception as e:
                     logger.warning(f"Failed to set thumbnail for {song.title}: {e}")
@@ -114,12 +117,12 @@ class MediaControlWin32:
     def get_ras_from_pil(
         self,
         img: Image.Image,
-        videoId: str,
+        video_id: str,
     ) -> RandomAccessStreamReference:
         """Convert PIL image to RandomAccessStreamReference for thumbnails"""
         covers_dir = Path(setting.cover_dir)
 
-        tmp_file: Path = covers_dir / f"{videoId}_cover.png"
+        tmp_file: Path = covers_dir / f"{video_id}_cover.png"
         img.save(tmp_file, format="PNG")
 
         storage_file: StorageFile = StorageFile.get_file_from_path_async(

@@ -1,13 +1,15 @@
-import pytest
 from pathlib import Path
-from api.downloader import Downloader, _convert_to_mp3, _download_from_yt, _delete_file
+
+import pytest
 from util_test import Cleaner
+
+from api.downloader import Downloader, _convert_to_mp3, _delete_file, _download_from_yt
 
 
 class MockSongData:
     title = "Test Song"
     duration = "3:30"
-    videoId = "C0DPdy98e4c"
+    video_id = "C0DPdy98e4c"
 
     def get_formatted_artists(self) -> str:
         return "Test Artist"
@@ -56,7 +58,7 @@ def test_song_already_downloaded(downloader):
 def test_download_failed_return_none():
     with Cleaner(BASE_PATH):
         song = MockSongData()
-        song.videoId = "invalid"
+        song.video_id = "invalid"
         result = _download_from_yt(song, BASE_PATH)
         assert result is None
 
@@ -64,7 +66,7 @@ def test_download_failed_return_none():
 def test_downloader_failed_return_none(downloader):
     with Cleaner(BASE_PATH):
         song = MockSongData()
-        song.videoId = "invalid"
+        song.video_id = "invalid"
         result = downloader.download(song)
         assert result is None
 

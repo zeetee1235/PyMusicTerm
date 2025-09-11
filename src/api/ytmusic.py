@@ -46,7 +46,7 @@ class YTMusic:
             title: str = result.get("title", "Unknown")
             artist: list[str] = [artist["name"] for artist in result.get("artists", [])]
             duration: str = result.get("duration", "Unknown")
-            videoId: str = result.get("videoId", "Unknown")
+            video_id: str = result.get("videoId", "Unknown")
             thumbnail: ImageFile = Image.open(
                 requests.get(result["thumbnails"][0]["url"], stream=True).raw,
             )
@@ -57,7 +57,7 @@ class YTMusic:
                     title=title,
                     artist=artist,
                     duration=duration,
-                    videoId=videoId,
+                    video_id=video_id,
                     thumbnail=thumbnail,
                     album=album,
                 ),

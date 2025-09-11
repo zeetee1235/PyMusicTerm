@@ -25,26 +25,14 @@ def _download_from_yt(
     download_path: str,
     callback: None | Callable[[Stream, bytes, int], None] = None,
 ) -> str | None:
-    """
-    Download a song from a song.
-
-    Args:
-        song (SearchSongResult): The song to download
-        download_path (str): The path to download the song to
-        callback (None | Callable[[Stream, bytes, int], None]): The callback func use
-
-    Returns:
-        path (str): The path of the downloaded file or None if the download failed
-
-    """
     try:
         yt = YouTube(
-            f"https://www.youtube.com/watch?v={song.videoId}",
+            f"https://www.youtube.com/watch?v={song.video_id}",
             on_progress_callback=callback,
         )
         return yt.streams.get_audio_only().download(
             output_path=download_path,
-            filename=f"{song.videoId}.m4a",
+            filename=f"{song.video_id}.m4a",
         )
     except Exception as e:
         print(e)
@@ -52,16 +40,6 @@ def _download_from_yt(
 
 
 def _convert_to_mp3(path: str) -> str:
-    """
-    Convert an audio file to mp3.
-
-    Args:
-        path (str): path to the downloanded AUDIO file
-
-    Returns:
-        str: path to the mp3 file
-
-    """
     if not isinstance(path, str):
         msg: str = f"path must be a string, not {type(path)}"
         raise TypeError(msg)
@@ -73,13 +51,6 @@ def _convert_to_mp3(path: str) -> str:
 
 
 def _delete_file(path: str) -> None:
-    """
-    Delete a file.
-
-    Args:
-        path (str): path to the file
-
-    """
     Path(path).unlink(missing_ok=True)
 
 
@@ -88,21 +59,9 @@ class Downloader:
         self.download_path: str = download_path
 
     def download(self, song: SongData) -> str | None:
-        """
-        Download a song from a song object and return the path of the downloaded file.
-
-        If the file already exists, it will not be downloaded again and the path will be returned.
-
-        Args:
-            song (Song): The song to download
-
-        Returns:
-            path (str): The path of the downloaded file or None if the download failed
-
-        """
         self.song: SongData = song
 
-        song_path = Path(f"{self.download_path}/{song.videoId}.mp3")
+        song_path = Path(f"{self.download_path}/{song.video_id}.mp3")
         if song_path.exists():
             return str(song_path)
 

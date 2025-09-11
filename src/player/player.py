@@ -39,7 +39,7 @@ class PyMusicTermPlayer:
                     title=str(song_metadata["title"]),
                     artist=artist.values,
                     duration=format_time(float(str(song_metadata["#length"]))),
-                    videoId=Path(song).stem,
+                    video_id=Path(song).stem,
                     thumbnail=song_metadata["artwork"].first.thumbnail([128, 128]),
                     album=str(song_metadata["album"]),
                     path=Path(song),
@@ -52,7 +52,7 @@ class PyMusicTermPlayer:
 
         self.dict_of_song_result.clear()
         for song in result:
-            self.dict_of_song_result[song.videoId] = song
+            self.dict_of_song_result[song.video_id] = song
         return result
 
     def play_from_ytb(self, video_id: str) -> None:
@@ -65,6 +65,11 @@ class PyMusicTermPlayer:
             return
         # BUG: dont re-fetch the songs but add it to the list
         self.list_of_downloaded_songs = self.get_downloaded_songs()
+        self.current_song = self.list_of_downloaded_songs[
+            len(self.list_of_downloaded_songs) - 1
+        ]
+        self.current_song_index: int = len(self.list_of_downloaded_songs) - 1
+        self.media_control.populate_playlist()
         self.music_player.load_song(str(path))
         self.music_player.play_song()
         self.media_control.set_current_song(self.current_song_index)
@@ -94,6 +99,7 @@ class PyMusicTermPlayer:
             self.list_of_downloaded_songs[self.current_song_index].path,
         )
         self.music_player.play_song()
+        self.media_control.set_current_song(self.current_song_index)
         self.media_control.on_playback()
         return self.current_song_index
 
@@ -108,6 +114,7 @@ class PyMusicTermPlayer:
             self.list_of_downloaded_songs[self.current_song_index].path,
         )
         self.music_player.play_song()
+        self.media_control.set_current_song(self.current_song_index)
         self.media_control.on_playback()
         return self.current_song_index
 

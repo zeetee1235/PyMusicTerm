@@ -48,6 +48,7 @@ class PyMusicTerm(App):
     BINDINGS: ClassVar[list[Binding | tuple[str, str] | tuple[str, str, str]]] = [
         ("q", "seek_back", "Seek backward"),
         ("s", "play", "Play/Pause"),
+        ("space", "play", "Play/Pause"),
         ("d", "seek_forward", "Seek forward"),
         ("r", "shuffle", "Shuffle"),
         ("l", "loop", "Loop at the end"),
@@ -155,10 +156,6 @@ class PyMusicTerm(App):
     ) -> None:
         """
         Action when the tab is activated. If the tab is playlist, clear the options and add the songs to the playlist.
-
-        Args:
-            event (TabbedContent.TabActivated): The event that triggered the action
-
         """
         playlist_results: ListView = self.query_one("#playlist_results")
         if event is None or event.tab.id.endswith("playlist"):
@@ -166,7 +163,7 @@ class PyMusicTerm(App):
                 child.id.removeprefix("id-") for child in playlist_results.children
             ]
             for song in self.player.list_of_downloaded_songs:
-                if song.videoId not in children_id:
+                if song.video_id not in children_id:
                     await playlist_results.append(await self._create_song_item(song))
 
     async def update_time(self) -> None:
@@ -230,8 +227,8 @@ class PyMusicTerm(App):
     @on(ListView.Selected, "#playlist_results")
     async def select_playlist_result(self, event: ListView.Selected) -> None:
         """Select a song from the playlist results and play it."""
-        id: str = event.item.id.removeprefix("id-")
-        await self.play_from_id(id)
+        id_: str = event.item.id.removeprefix("id-")
+        await self.play_from_id(id_)
 
     async def play_from_id(self, ids: str) -> None:
         """
@@ -242,7 +239,7 @@ class PyMusicTerm(App):
 
         """
         for i, song in enumerate(self.player.list_of_downloaded_songs):
-            if song.videoId == ids:
+            if song.video_id == ids:
                 self.player.play_from_list(i)
                 await self.toggle_button()
 
@@ -366,7 +363,7 @@ class PyMusicTerm(App):
                     classes="length",
                 ),
             ),
-            id=f"id-{song.videoId}",
+            id=f"id-{song.video_id}",
             classes="song_item",
         )
 
