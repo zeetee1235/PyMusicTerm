@@ -1,5 +1,5 @@
 import sys
-from typing import Literal, Protocol, override
+from typing import Literal, NoReturn, Protocol, override
 
 from mpris_server import MetadataObj, Track
 from mpris_server.adapters import MprisAdapter, PlayState
@@ -52,7 +52,7 @@ class HAdapter(MprisAdapter):
         return True
 
     @override
-    def quit(self) -> sys.NoReturn:
+    def quit(self) -> NoReturn:
         sys.exit()
 
     @override
