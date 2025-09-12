@@ -10,7 +10,10 @@
 - STMC integration for Windows to control playback with windows.
 
 ## Images
-
+### On windows
+![stmc support](imgs/windows-ui-1.png) ![youtube search](imgs/windows-ui-2.png)
+### On Linux and MacOS
+TODO!
 
 ### Important
 The song are in the `~/.pymusicterm/musics` folder with specific name, tags and covers. 
