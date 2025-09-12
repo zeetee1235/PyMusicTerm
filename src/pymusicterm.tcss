@@ -3,12 +3,13 @@
 }
 
 .status_controls {
-    align: center middle;
+    align: center top;
 }
 
 .player_controls {
-    padding: 0 0;
-    align: center middle;
+    align: center top;    
+    margin: 0;
+    padding: 0;
 }
 
 Rule {
@@ -47,7 +48,6 @@ Rule {
     width: 20%;
 }
 
-
 .artist {
     text-overflow: ellipsis;
     text-wrap: nowrap;
@@ -63,17 +63,13 @@ Rule {
     padding: 0 1;
     align: center bottom;
 }
+
 .image {
     height: 3;
     width: 6;
     margin: 0 1 0 1;
     align: center middle;
 }
-
-ListItem {
-    transition: background 0.3s;
-}
-
 
 .playing {
     background: $primary;
