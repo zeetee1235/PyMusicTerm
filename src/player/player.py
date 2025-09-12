@@ -47,7 +47,7 @@ class PyMusicTermPlayer:
             )
         return list_of_songs
 
-    def query(self, query: str, filter: str) -> list[SongData]:
+    def query(self, query: str, filter: str) -> list[SongData]:  # noqa: A002
         result: list[SongData] = self.ytm.search(query, filter)
 
         self.dict_of_song_result.clear()
@@ -75,7 +75,7 @@ class PyMusicTermPlayer:
         self.media_control.set_current_song(self.current_song_index)
         self.media_control.on_playback()
 
-    def play_from_list(self, id: int) -> None:
+    def play_from_list(self, id: int) -> None:  # noqa: A002
         """
         Play a song from the list of downloaded songs.
         """

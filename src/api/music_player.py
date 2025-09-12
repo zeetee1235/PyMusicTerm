@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from just_playback import Playback
 
@@ -6,7 +6,7 @@ from just_playback import Playback
 class Singleton(type):
     _instances: ClassVar[dict[type, object]] = {}
 
-    def __call__(cls, *args, **kwargs) -> "MusicPlayer":
+    def __call__(cls, *args: Any, **kwargs: Any) -> "MusicPlayer":  # noqa: ANN401
         if cls not in cls._instances:
             cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]

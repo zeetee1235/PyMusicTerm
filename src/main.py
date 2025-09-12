@@ -1,10 +1,13 @@
+from log.logger import setup_logging
+
+setup_logging()
+
 import asyncio
+import logging
 from datetime import timedelta
-from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import requests_cache
-from loguru import logger
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -35,13 +38,8 @@ if TYPE_CHECKING:
 
     from player.media_control import MediaControlMPRIS, MediaControlWin32
 
-# TODO @Zachvfx: rendre plus maintenable le code existnant en refactorisant
-# TODO : renomer les fonctions pour qu'elles soient plus explicites, et pareil pour les id et classes des widgets
-# TODO : ajouter des tests unitaires
-# TODO : améliorer le queuing systeme
-# TODO : ajouter des raccourcis clavier modifiables
-# TODO : AJOUTER Type validation (raise error) --- 50%
-# TODO : ajouter des logs messages
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PyMusicTerm(App):
@@ -66,19 +64,12 @@ class PyMusicTerm(App):
         self.setting: SettingManager = setting
         rename_console("PyMusicTerm")
 
-        logger.remove()
-        logger.add(
-            Path(self.setting.log_dir + "/pymusicterm.log"),
-            format="{time} {level} {message}",
-            level="INFO",
-            rotation="500 MB",
-        )
         self.timer: Widget | None = None
 
         if self.setting.os == "win32":
-            from player.media_control import MediaControlWin32 as MediaControl
+            from player.media_control import MediaControlWin32 as MediaControl  # noqa: I001, PLC0415
         else:
-            from player.media_control import MediaControlMPRIS as MediaControl
+            from player.media_control import MediaControlMPRIS as MediaControl  # noqa: I001, PLC0415
         requests_cache.install_cache(
             f"{self.setting.cache_dir}/cache",
             expire_after=timedelta(hours=1),
@@ -155,7 +146,7 @@ class PyMusicTerm(App):
         event: TabbedContent.TabActivated | None,
     ) -> None:
         """
-        Action when the tab is activated. If the tab is playlist, clear the options and add the songs to the playlist.
+        If the tab is playlist, clear the options and add the songs to the playlist.
         """
         playlist_results: ListView = self.query_one("#playlist_results")
         if event is None or event.tab.id.endswith("playlist"):
@@ -380,7 +371,6 @@ class PyMusicTerm(App):
         self.notify(f"Volume changed to {self.player.music_player.volume:.2f}")
 
 
-@logger.catch
 async def main() -> None:
     setting = SettingManager()
     app = PyMusicTerm(setting)

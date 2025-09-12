@@ -1,4 +1,5 @@
 import io
+import logging
 from collections.abc import Callable
 from pathlib import Path
 
@@ -8,6 +9,8 @@ from pydub import AudioSegment
 from pytubefix import Stream, YouTube
 
 from .ytmusic import SongData
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def image_to_byte(image: Image) -> bytes:
@@ -34,8 +37,8 @@ def _download_from_yt(
             output_path=download_path,
             filename=f"{song.video_id}.m4a",
         )
-    except Exception as e:
-        print(e)
+    except Exception:
+        logger.exception("Exception when downloading youtube sound.")
         return None
 
 
@@ -78,7 +81,7 @@ class Downloader:
 
         file_path = music_tag.load_file(converted_path)
         file_path["title"] = song.title
-        file_path["artist"] = [artist for artist in song.artist]
+        file_path["artist"] = list(song.artist)
         file_path["artwork"] = image_to_byte(song.thumbnail)
         file_path["album"] = song.album
         file_path.save()
@@ -87,8 +90,8 @@ class Downloader:
 
         return str(converted_path)
 
-    def on_progress(self, stream: Stream, chunk: bytes, bytes_remaining: int) -> None:
+    def on_progress(self, stream: Stream, _: bytes, bytes_remaining: int) -> None:
         filesize: int = stream.filesize
         bytes_received: int = filesize - bytes_remaining
         percent: float = (bytes_received / filesize) * 100
-        print(f"Downloaded {percent:.2f}% of {stream.title}")
+        logger.info(f"Downloaded {percent:.2f}% of {stream.title}")  # noqa: G004

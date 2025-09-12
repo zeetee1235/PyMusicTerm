@@ -1,9 +1,12 @@
+import logging
 import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from msgspec import toml
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 HOME: Path = Path.home()
 APP_DIR = Path(HOME / ".pymusicterm")
@@ -139,8 +142,8 @@ class SettingManager:
         try:
             with SETTING_FILE.open("rb") as f:
                 return toml.decode(f.read(), type=Setting)
-        except Exception as e:
-            print(f"Error loading settings: {e}")
+        except Exception:
+            logger.exception("Error loading settings")
             return Setting()
 
     def save_setting(self) -> None:
@@ -149,8 +152,8 @@ class SettingManager:
             with SETTING_FILE.open("wb") as f:
                 encoded: bytes = toml.encode(self._setting)
                 f.write(encoded)
-        except Exception as e:
-            print(f"Error saving settings: {e}")
+        except Exception:
+            logger.exception("Error saving settings")
 
     def check_and_create_paths(self) -> None:
         """Check and create necessary directories and files."""
@@ -191,9 +194,9 @@ def rename_console(name: str, platform: str = sys.platform) -> None:
         raise ValueError(msg)
     if platform == "win32":
         command: str = f"title {name}"
-        os.system(command)
+        os.system(command)  # noqa: S605
     else:
-        print(f"\33]0;{name}\a", end="", flush=True)
+        logger.error(f"\33]0;{name}\a", end="", flush=True)  # noqa: G004
 
 
 '''def have_internet() -> bool:

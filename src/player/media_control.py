@@ -1,5 +1,6 @@
 from typing import Protocol
 
+from api.protocols import PyMusicTermPlayer
 from setting import SettingManager
 
 setting = SettingManager()
@@ -7,8 +8,10 @@ if setting.os == "win32":
     from api.smtc.smtc import MediaControlWin32 as MediaControlWin
 
 else:
-    from mpris_server import EventAdapter
-    from mpris_server import Server as ServerMpris
+    from mpris_server import EventAdapter  # pyright: ignore[reportMissingImports]
+    from mpris_server import (  # pyright: ignore[reportMissingImports]
+        Server as ServerMpris,
+    )
 
     from api.mpris.mpris import HAdapter
 
@@ -33,7 +36,7 @@ if setting.os == "win32":
         def __init__(self) -> None:
             super().__init__()
 
-        def init(self, player) -> None:
+        def init(self, player: PyMusicTermPlayer) -> None:
             return super().init(player)
 
         def on_playback(self) -> None:
@@ -59,7 +62,7 @@ else:
             self.mpris = ServerMpris(name="PyMusicTerm", adapter=self.adapter)
             self.event = EventAdapter(root=self.mpris.root, player=self.mpris.player)
 
-        def init(self, player) -> None:
+        def init(self, player: PyMusicTermPlayer) -> None:
             self.adapter.setup(player)
             self.mpris.loop(background=True)
 

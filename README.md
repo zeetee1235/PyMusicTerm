@@ -42,7 +42,6 @@ The player reads a configuration file (`setting.toml`) for custom settings in th
 - [`pytubefix`](https://pypi.org/project/pytubefix/): Simplified YouTube streaming.
 - [`textual`](https://pypi.org/project/textual/): Terminal user interface framework.
 - [`ytmusicapi`](https://pypi.org/project/ytmusicapi/): YouTube Music API integration.
-- [`loguru`](https://pypi.org/project/loguru/): Advanced logging.
 - [`mpris-server`](https://pypi.org/project/mpris-server/): MPRIS integration (Linux and macos only).
 
 ## Contributing

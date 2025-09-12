@@ -1,9 +1,12 @@
 import sys
 from typing import Literal, NoReturn, override
 
-from mpris_server import MetadataObj, Track
-from mpris_server.adapters import MprisAdapter, PlayState
-from mpris_server.base import MIME_TYPES, URI
+from mpris_server import MetadataObj, Track  # pyright: ignore[reportMissingImports]
+from mpris_server.adapters import (  # pyright: ignore[reportMissingImports]
+    MprisAdapter,
+    PlayState,
+)
+from mpris_server.base import MIME_TYPES, URI  # pyright: ignore[reportMissingImports]
 
 from api.protocols import PyMusicTermPlayer
 from api.ytmusic import SongData
@@ -14,7 +17,7 @@ class HAdapter(MprisAdapter):
         super().__init__()
         self.player: PyMusicTermPlayer | None = None
 
-    def setup(self, player) -> None:
+    def setup(self, player: PyMusicTermPlayer) -> None:
         self.player = player
 
     @override
@@ -68,7 +71,7 @@ class HAdapter(MprisAdapter):
         return PlayState.PLAYING
 
     @override
-    def seek(self, time, track_id=None) -> None:
+    def seek(self, time: int, _: None = None) -> None:
         self.player.seek_to(time / 1000000)
 
     @override
@@ -80,11 +83,11 @@ class HAdapter(MprisAdapter):
         return self.can_go_next() or self.can_go_previous()
 
     @override
-    def set_repeating(self, val: bool) -> None:
+    def set_repeating(self, _: bool) -> None:
         self.player.loop_at_end()
 
     @override
-    def set_loop_status(self, val: str) -> None:
+    def set_loop_status(self, _: str) -> None:
         pass
 
     @override
@@ -92,7 +95,7 @@ class HAdapter(MprisAdapter):
         return 1.0
 
     @override
-    def set_rate(self, val: float) -> None:
+    def set_rate(self, _: float) -> None:
         pass
 
     @override
@@ -100,7 +103,7 @@ class HAdapter(MprisAdapter):
         return False
 
     @override
-    def set_shuffle(self, val: bool) -> Literal[False]:
+    def set_shuffle(self, _: bool) -> Literal[False]:
         return False
 
     @override

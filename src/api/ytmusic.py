@@ -18,7 +18,7 @@ class YTMusic:
     def __init__(self) -> None:
         self.client = ytmusicapi.YTMusic()
 
-    def search(self, query: str, filter: str = "songs") -> list[SongData]:
+    def search(self, query: str, filter: str = "songs") -> list[SongData]:  # noqa: A002
         """
         Search for a song on YTMusic.
 
@@ -48,7 +48,7 @@ class YTMusic:
             duration: str = result.get("duration", "Unknown")
             video_id: str = result.get("videoId", "Unknown")
             thumbnail: ImageFile = Image.open(
-                requests.get(result["thumbnails"][0]["url"], stream=True).raw,
+                requests.get(result["thumbnails"][0]["url"], stream=True).raw,  # noqa: S113
             )
             x = result.get("album", None)
             album = x.get("name") if x else "Unknown"
