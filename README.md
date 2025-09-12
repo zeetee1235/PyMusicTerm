@@ -38,6 +38,24 @@ uv sync #or pip install the dependencies
 - **Download from YouTube:** Search for a song or paste the URL.
 - **Control playback:** Use keyboard shortcuts to play, pause, skip, or adjust volume.
 
+## Keybinds
+| Key     | Action                   | Description            |
+| ------- | ------------------------ | ---------------------- |
+| `q`     | `seek_back`              | Seek backward          |
+| `s`     | `play`                   | Play/Pause             |
+| `space` | `play`                   | Play/Pause             |
+| `d`     | `seek_forward`           | Seek forward           |
+| `r`     | `shuffle`                | Shuffle                |
+| `l`     | `loop`                   | Loop at the end        |
+| `a`     | `previous`               | Previous song          |
+| `e`     | `next`                   | Next song              |
+| `&`     | `return_on_search_tab`   | Go to the search tab   |
+| `é`     | `return_on_playlist_tab` | Go to the playlist tab |
+| `"`     | `return_on_lyrics_tab`   | Go to the lyrics tab   |
+| `j`     | `volume(-0.01)`          | Volume down            |
+| `k`     | `volume(0.01)`           | Volume up              |
+
+
 ## Configuration
 
 The player reads a configuration file (`setting.toml`) for custom settings in the `~/.pymusicterm` directory.
