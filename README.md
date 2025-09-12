@@ -1,3 +1,6 @@
+> [!WARNING]
+> This project is a work in progress. You may encounter some bugs — feel free to open an issue or submit a pull request with a fix.
+
 # pymusicterm
 **pymusicterm** is a terminal-based music player that allows you to play your favorite songs directly from your terminal. 
 
