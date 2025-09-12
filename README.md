@@ -3,13 +3,17 @@
 
 ## Features
 - Play offline music.
-- Download music from YouTube with `pytubefix` and `ytmusicapi`.
-- Terminal-based interface powered by `textual`.
+- Download music from YouTube and Youtube Music.
+- Terminal-based interface.
 - Cross-platform support (Linux, macOS, Windows).
 - MPRIS server integration for Linux and MACOS to control playback with external tools.
+- STMC integration for Windows to control playback with windows.
+
+## Images
+
 
 ### Important
-The song are in the `~/.pymusicterm/musics` folder with specific name and tags
+The song are in the `~/.pymusicterm/musics` folder with specific name, tags and covers. 
 
 ## Installation with uv
 ```bash	
@@ -41,8 +45,11 @@ The player reads a configuration file (`setting.toml`) for custom settings in th
 - [`pydub`](https://pypi.org/project/pydub/): Audio processing.
 - [`pytubefix`](https://pypi.org/project/pytubefix/): Simplified YouTube streaming.
 - [`textual`](https://pypi.org/project/textual/): Terminal user interface framework.
+- [`textual-image`](https://pypi.org/project/textual-image/): Terminal image display.
 - [`ytmusicapi`](https://pypi.org/project/ytmusicapi/): YouTube Music API integration.
 - [`mpris-server`](https://pypi.org/project/mpris-server/): MPRIS integration (Linux and macos only).
+- [`winrt-windows project`](https://github.com/pywinrt/pywinrt): Windows Media Controller.
+- [`music-tag`](https://pypi.org/project/music-tag/): Music metadata
 
 ## Contributing
 
@@ -57,5 +64,3 @@ Contributions are welcome! Please follow these steps:
 This project is licensed under the MIT License. See the `LICENSE` file for more details.
 
 ---
-
-Enjoy your music in the terminal with **pymusicterm**!
