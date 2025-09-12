@@ -11,7 +11,7 @@
 
 ## Images
 ### On windows
-![stmc support](imgs/windows-ui-1.png) ![youtube search](imgs/windows-ui-2.png)
+![stmc support](https://github.com/ZachVFXX/PyMusicTerm/blob/453792bb8122e1ed2f496eb40b7d3a67ff109880/imgs/windows-ui-1.png) ![youtube search](imgs/windows-ui-2.png)
 ### On Linux and MacOS
 TODO! (The same as windows, with mpris support !)
 
