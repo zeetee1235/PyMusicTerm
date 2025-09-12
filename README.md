@@ -13,7 +13,7 @@
 ### On windows
 ![stmc support](imgs/windows-ui-1.png) ![youtube search](imgs/windows-ui-2.png)
 ### On Linux and MacOS
-TODO!
+TODO! (The same as windows, with mpris support !)
 
 ### Important
 The song are in the `~/.pymusicterm/musics` folder with specific name, tags and covers. 
