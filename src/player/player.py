@@ -95,6 +95,7 @@ class PyMusicTermPlayer:
             self.current_song_index = len(self.list_of_downloaded_songs) - 1
         else:
             self.current_song_index -= 1
+        self.current_song = self.list_of_downloaded_songs[self.current_song_index]
         self.music_player.load_song(
             self.list_of_downloaded_songs[self.current_song_index].path,
         )

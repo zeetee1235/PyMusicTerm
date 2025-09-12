@@ -164,6 +164,14 @@ class PyMusicTerm(App):
             button.label = "󰏤"
         else:
             button.label = "󰐊"
+
+        playlist_results: ListView = self.query_one("#playlist_results")
+        if self.player.playing:
+            for i, item in enumerate(playlist_results.children):
+                id_: str = item.id.removeprefix("id-")
+                if id_ == self.player.current_song.video_id:
+                    playlist_results.index = i
+
         progress_bar: ProgressBar = self.query_one("#player_status")
         label_current_song_position: Label = self.query_one(
             "#label_current_song_position",
@@ -234,13 +242,6 @@ class PyMusicTerm(App):
         self.player.play_from_ytb(video_id)
         await self.toggle_button()
 
-    @on(Button.Pressed, "#previous")
-    async def action_previous(self) -> None:
-        """Play the previous song."""
-        await self.toggle_button()
-        playlist_results: ListView = self.query_one("#playlist_results")
-        playlist_results.index = self.player.previous()
-
     @on(Button.Pressed, "#play_pause")
     async def action_play(self) -> None:
         """Play or pause the song."""
@@ -264,10 +265,17 @@ class PyMusicTerm(App):
                 name="update_time",
             )
 
+    @on(Button.Pressed, "#previous")
+    async def action_previous(self) -> None:
+        """Play the previous song."""
+        await self.toggle_button()
+        playlist_results: ListView = self.query_one("#playlist_results")
+        playlist_results.index = self.player.previous()
+
     @on(Button.Pressed, "#next")
     async def action_next(self) -> None:
         """Play the next song."""
-        self.toggle_button()
+        await self.toggle_button()
         playlist_results: ListView = self.query_one("#playlist_results")
         playlist_results.index = self.player.next()
 
