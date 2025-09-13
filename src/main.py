@@ -1,6 +1,8 @@
 import time
+from pathlib import Path
 
-from discord_rpc.rich_presence import rich_presence
+from api.discord_rpc.rich_presence import rich_presence
+from api.lyrics import download_lyrics
 from log.logger import setup_logging
 
 setup_logging()
@@ -34,7 +36,7 @@ from textual_image.widget import Image as WidgetImage
 
 from api.protocols import SongData
 from player.player import PyMusicTermPlayer
-from player.util import format_time
+from player.util import format_time, string_to_seconds
 from setting import SettingManager, rename_console
 
 if TYPE_CHECKING:
@@ -232,6 +234,7 @@ class PyMusicTerm(App):
         """Select a song from the playlist results and play it."""
         id_: str = event.item.id.removeprefix("id-")
         await self.play_from_id(id_)
+        await self.update_lyrics_view()
 
     async def play_from_id(self, ids: str) -> None:
         for i, song in enumerate(self.player.list_of_downloaded_songs):
@@ -245,6 +248,26 @@ class PyMusicTerm(App):
         video_id: str = str(event.item.id).removeprefix("id-")
         self.player.play_from_ytb(video_id)
         await self.toggle_button()
+        await self.update_lyrics_view()
+
+    async def update_lyrics_view(self) -> None:
+        markdown: MarkdownViewer = self.query_one("#lyrics_results")
+        path: Path = (
+            Path(self.setting.lyrics_dir) / f"{self.player.current_song.video_id}.md"
+        )
+        if path.exists():
+            await markdown.go(path)
+        else:
+            song: SongData | None = self.player.current_song
+            download_lyrics(
+                song.video_id,
+                track=song.title,
+                album=song.album,
+                artist=song.artist[0],
+                duration=string_to_seconds(song.duration),
+            )
+            if path.exists():
+                await markdown.go(path)
 
     @on(Button.Pressed, "#play_pause")
     async def action_play(self) -> None:
@@ -275,6 +298,7 @@ class PyMusicTerm(App):
         await self.toggle_button()
         playlist_results: ListView = self.query_one("#playlist_results")
         playlist_results.index = self.player.previous()
+        await self.update_lyrics_view()
 
     @on(Button.Pressed, "#next")
     async def action_next(self) -> None:
@@ -282,6 +306,7 @@ class PyMusicTerm(App):
         await self.toggle_button()
         playlist_results: ListView = self.query_one("#playlist_results")
         playlist_results.index = self.player.next()
+        await self.update_lyrics_view()
 
     @on(Button.Pressed, "#shuffle")
     async def action_shuffle(self) -> None:

@@ -29,6 +29,7 @@ dependencies = [
     "winrt-windows-foundation-collections>=3.2.1; sys_platform == 'win32'",
     "music-tag>=0.4.3",
     "pypresence",
+    "lrcup>=0.10.1",
 ]
 
 [tool.pytest.ini_options]

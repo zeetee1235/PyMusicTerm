@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 
 import requests
@@ -6,6 +7,8 @@ from PIL import Image
 from PIL.ImageFile import ImageFile
 
 from api.protocols import SongData
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclass

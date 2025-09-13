@@ -8,6 +8,9 @@ from PIL import Image
 from pydub import AudioSegment
 from pytubefix import Stream, YouTube
 
+from api.lyrics import download_lyrics
+from player.util import string_to_seconds
+
 from .ytmusic import SongData
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -85,6 +88,14 @@ class Downloader:
         file_path["artwork"] = image_to_byte(song.thumbnail)
         file_path["album"] = song.album
         file_path.save()
+
+        download_lyrics(
+            video_id=song.video_id,
+            track=song.title,
+            artist=song.artist[0],
+            album=None,
+            duration=string_to_seconds(song.duration),
+        )
 
         _delete_file(yt_path)
 
