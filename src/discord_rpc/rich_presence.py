@@ -23,7 +23,7 @@ class RichPresenceError(Exception):
 def create_progress_bar(percentage: int) -> str:
     """Create a text-based progress bar."""
     percentage = max(0, min(percentage, 100))
-    total_segments = 10
+    total_segments = 8
     completed_segments: int = round((percentage / 100) * total_segments)
     return "▰" * completed_segments + "▱" * (total_segments - completed_segments)
 
@@ -33,7 +33,7 @@ def format_time(seconds: float) -> str:
     return time.strftime("%M:%S", time.gmtime(seconds))
 
 
-async def rich_presence(player: PyMusicTermPlayer) -> None:
+async def rich_presence(player: PyMusicTermPlayer, start: int) -> None:
     """Main function to run the Rich Presence update loop."""
     rpc = None
     try:
@@ -60,10 +60,11 @@ async def rich_presence(player: PyMusicTermPlayer) -> None:
 
                     await rpc.update(
                         activity_type=ActivityType.LISTENING,
-                        state=f"{current_time} {create_progress_bar(progress_percentage)} {song_length}",
+                        large_text=f"{current_time} {create_progress_bar(progress_percentage)} {song_length}",
                         details=f"{song_name} - {artist_name}",
                         large_image="play" if player.playing else "pause",
-                        large_text=f"Album: {album_name}",
+                        state=f"Album: {album_name}",
+                        start=start,
                     )
 
                 except KeyError as e:

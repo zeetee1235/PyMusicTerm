@@ -1,3 +1,5 @@
+import time
+
 from discord_rpc.rich_presence import rich_presence
 from log.logger import setup_logging
 
@@ -294,7 +296,7 @@ class PyMusicTerm(App):
     async def action_loop(self) -> None:
         """Toggle the loop button."""
         loop_button: Button = self.query_one("#loop")
-        is_looping = self.player.loop_at_end()
+        is_looping: bool = self.player.loop_at_end()
         if is_looping:
             loop_button.variant = "success"
         else:
@@ -384,7 +386,9 @@ class PyMusicTerm(App):
 async def main() -> None:
     setting = SettingManager()
     app = PyMusicTerm(setting)
-    task: asyncio.Task[None] = asyncio.create_task(rich_presence(app.player))
+    task: asyncio.Task[None] = asyncio.create_task(
+        rich_presence(app.player, start=time.time()),
+    )
     try:
         await app.run_async()
     finally:
