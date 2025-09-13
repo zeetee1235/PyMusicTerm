@@ -14,7 +14,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, ClassVar
 
 import requests_cache
-from textual import on
+from textual import on, work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Center, Horizontal, Vertical
@@ -32,6 +32,7 @@ from textual.widgets import (
     TabbedContent,
     TabPane,
 )
+from textual.worker import Worker, get_current_worker
 from textual_image.widget import Image as WidgetImage
 
 from api.protocols import SongData
@@ -246,9 +247,22 @@ class PyMusicTerm(App):
     async def select_result(self, event: ListView.Selected) -> None:
         """Select a song from the search results and play it."""
         video_id: str = str(event.item.id).removeprefix("id-")
+        search_results: ListView = self.query_one("#search_results")
+        search_results.loading = True
+        self.download_async(video_id)
+
+    @work(thread=True, exclusive=True)
+    def download_async(self, video_id: str) -> None:
+        worker: Worker = get_current_worker()
         self.player.play_from_ytb(video_id)
+        if not worker.is_cancelled:
+            self.call_from_thread(self.download_and_update)
+
+    async def download_and_update(self) -> None:
         await self.toggle_button()
         await self.update_lyrics_view()
+        search_results: ListView = self.query_one("#search_results")
+        search_results.loading = False
 
     async def update_lyrics_view(self) -> None:
         markdown: MarkdownViewer = self.query_one("#lyrics_results")
@@ -344,21 +358,27 @@ class PyMusicTerm(App):
                 playlist_results.append(await self._create_song_item(song))
 
     @on(Input.Submitted, "#search_input")
-    async def search_ytb(self) -> None:
-        """Search asynchronously on YTMusic."""
+    def search(self) -> None:
+        """Search for a song on YTMusic and display the results."""
         search_results: ListView = self.query_one("#search_results")
-        await search_results.clear()
+        search_results.clear()
         search_input: Input = self.query_one("#search_input")
         if search_input.value == "":
             return
         search_results.loading = True
+        self.search_ytb_thread(search_input.value)
+
+    @work(exclusive=True, thread=True)
+    def search_ytb_thread(self, query: str) -> None:
+        worker: Worker = get_current_worker()
         filters: Select = self.query_one("#search_sort")
-        results: list[SongData] = self.player.query(
-            search_input.value,
-            filters.value,
-        )
+        results: list[SongData] = self.player.query(query, filters.value)
+        if not worker.is_cancelled:
+            self.call_from_thread(self.update_search_results, results)
+
+    async def update_search_results(self, results: list[SongData]) -> None:
         search_results: ListView = self.query_one("#search_results")
-        await search_results.clear()
+        search_results.clear()
         for result in results:
             search_results.append(await self._create_song_item(result))
         search_results.loading = False

@@ -56,7 +56,10 @@ async def rich_presence(player: PyMusicTermPlayer, start: int) -> None:
 
                     current_time: str = format_time(track_time)
                     song_length: str = format_time(track_length)
-                    progress_percentage = int((track_time / track_length) * 100)
+                    try:
+                        progress_percentage = int((track_time / track_length) * 100)
+                    except ZeroDivisionError:
+                        progress_percentage = 0
 
                     await rpc.update(
                         activity_type=ActivityType.LISTENING,
