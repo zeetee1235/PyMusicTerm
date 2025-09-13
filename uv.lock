@@ -679,6 +679,7 @@ dependencies = [
     { name = "pillow" },
     { name = "pydub" },
     { name = "pyinstaller" },
+    { name = "pypresence" },
     { name = "pytubefix" },
     { name = "requests-cache" },
     { name = "textual" },
@@ -713,6 +714,7 @@ requires-dist = [
     { name = "pillow", specifier = ">=11.1.0" },
     { name = "pydub", specifier = ">=0.25.1" },
     { name = "pyinstaller", specifier = ">=6.12.0" },
+    { name = "pypresence", url = "https://github.com/qwertyquerty/pypresence/archive/master.zip" },
     { name = "pytubefix", specifier = ">=8.12.1" },
     { name = "requests-cache", specifier = ">=1.2.1" },
     { name = "textual", specifier = ">=6.1.0" },
@@ -997,6 +999,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/71/d6/e5b378b7d4add8c87
 wheels = [
     { url = "https://files.pythonhosted.org/packages/48/34/1d973d0dae849683e53fbcda84443ce016f315e6f4dc7605ede4f56a28c3/pyinstaller_hooks_contrib-2025.8-py3-none-any.whl", hash = "sha256:8d0b8cfa0cb689a619294ae200497374234bd4e3994b3ace2a4442274c899064", size = 442346 },
 ]
+
+[[package]]
+name = "pypresence"
+version = "4.4.0"
+source = { url = "https://github.com/qwertyquerty/pypresence/archive/master.zip" }
+sdist = { hash = "sha256:413542482beebf108d9cb7cf6fce49a03f8d73bcb50f67e19ebc660f6a08d1eb" }
 
 [[package]]
 name = "pytest"

@@ -3,6 +3,8 @@ from typing import Protocol
 
 from PIL import ImageFile
 
+from api.music_player import MusicPlayer
+
 
 @dataclass
 class SongData:
@@ -22,10 +24,12 @@ class SongData:
 class PyMusicTermPlayer(Protocol):
     position: float
     current_song_index: int
+    current_song: SongData | None = None
     song_length: float
     playing: bool
     list_of_downloaded_songs: list[SongData]
     dict_of_lyrics: dict[str, str]
+    music_player = MusicPlayer(1)
 
     def query(self, query: str, filter: str) -> list: ...  # noqa: A002
     def play_from_ytb(self, video_id: str) -> None: ...

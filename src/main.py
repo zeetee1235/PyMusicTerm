@@ -1,8 +1,10 @@
+from discord_rpc.rich_presence import rich_presence
 from log.logger import setup_logging
 
 setup_logging()
 
 import asyncio
+import contextlib
 import logging
 from datetime import timedelta
 from typing import TYPE_CHECKING, ClassVar
@@ -382,7 +384,13 @@ class PyMusicTerm(App):
 async def main() -> None:
     setting = SettingManager()
     app = PyMusicTerm(setting)
-    await app.run_async()
+    task: asyncio.Task[None] = asyncio.create_task(rich_presence(app.player))
+    try:
+        await app.run_async()
+    finally:
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
 
 
 if __name__ == "__main__":
