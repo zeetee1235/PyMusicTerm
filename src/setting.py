@@ -196,7 +196,7 @@ def rename_console(name: str, platform: str = sys.platform) -> None:
         command: str = f"title {name}"
         os.system(command)  # noqa: S605
     else:
-        logger.error(f"\33]0;{name}\a", end="", flush=True)  # noqa: G004
+        logger.error(f"\33]0;{name}\a (Error when setting terminal name)")  # noqa: G004
 
 
 '''def have_internet() -> bool:
