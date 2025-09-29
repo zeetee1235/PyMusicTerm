@@ -5,7 +5,6 @@ from api.discord_rpc.rich_presence import rich_presence
 from api.lyrics import download_lyrics
 from log.logger import setup_logging
 
-setup_logging()
 
 import asyncio
 import contextlib

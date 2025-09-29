@@ -6,6 +6,8 @@ from pathlib import Path
 
 from msgspec import toml
 
+from log.logger import setup_logging
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 HOME: Path = Path.home()
@@ -73,6 +75,7 @@ class SettingManager:
         self._setting = None
         self.check_and_create_paths()
         self._setting: Setting = self.load_setting()
+        setup_logging(self.log_dir)
 
     @property
     def os(self) -> str:

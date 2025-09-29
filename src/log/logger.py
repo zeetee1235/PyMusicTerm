@@ -11,10 +11,6 @@ from logging.config import dictConfig
 from pathlib import Path
 from typing import Any, override
 
-from setting import Setting
-
-setting = Setting()
-
 LOG_RECORD_BUILTIN_ATTRS: set[str] = {
     "args",
     "asctime",
@@ -85,13 +81,13 @@ class JSONFormatter(logging.Formatter):
         return message
 
 
-def setup_logging() -> None:
+def setup_logging(log_dir: str) -> None:
     config_file: Path = Path(
         Path(__file__).parent / "logging_config.json",
     )
     with config_file.open() as f_in:
         config: dict[str, Any] = json.load(f_in)
-    log_file_path: Path = Path(setting.log_dir) / "pymusicterm.log.jsonl"
+    log_file_path: Path = Path(log_dir) / "pymusicterm.log.jsonl"
     config["handlers"]["file_json"]["filename"] = str(log_file_path)
 
     dictConfig(config)

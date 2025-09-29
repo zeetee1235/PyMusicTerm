@@ -71,7 +71,7 @@ class HAdapter(MprisAdapter):
         return PlayState.PLAYING
 
     @override
-    def seek(self, time: int, _: None = None) -> None:
+    def seek(self, time: int, track_id: None = None) -> None:
         self.player.seek_to(time / 1000000)
 
     @override
@@ -83,11 +83,11 @@ class HAdapter(MprisAdapter):
         return self.can_go_next() or self.can_go_previous()
 
     @override
-    def set_repeating(self, _: bool) -> None:
+    def set_repeating(self, value: bool) -> None:
         self.player.loop_at_end()
 
     @override
-    def set_loop_status(self, _: str) -> None:
+    def set_loop_status(self, value: str) -> None:
         pass
 
     @override
@@ -95,7 +95,7 @@ class HAdapter(MprisAdapter):
         return 1.0
 
     @override
-    def set_rate(self, _: float) -> None:
+    def set_rate(self, value: float) -> None:
         pass
 
     @override
@@ -103,7 +103,7 @@ class HAdapter(MprisAdapter):
         return False
 
     @override
-    def set_shuffle(self, _: bool) -> Literal[False]:
+    def set_shuffle(self, value: bool) -> Literal[False]:
         return False
 
     @override
