@@ -27,6 +27,10 @@ Rule {
     margin: 0 1;
 }
 
+#lyrics_viewer {
+    margin: 0 1;
+}
+
 .song_item {
     height: 5;
     padding: 1 0 0 0;

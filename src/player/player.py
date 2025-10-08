@@ -27,6 +27,7 @@ class PyMusicTermPlayer:
         self.dict_of_song_result: dict[str, SongData] = {}
         self.current_song_index = 0
         self.current_song: SongData | None = None
+        self.lyrics_data: list[tuple[int, str]] | None = None
 
     def get_downloaded_songs(self) -> list[SongData]:
         songs: list[str | None] = fetch_files_from_folder(self.setting.music_dir, "mp3")

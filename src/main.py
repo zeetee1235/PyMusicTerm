@@ -1,15 +1,9 @@
-import time
-from pathlib import Path
-
-from api.discord_rpc.rich_presence import rich_presence
-from api.lyrics import download_lyrics
-from log.logger import setup_logging
-
-
 import asyncio
 import contextlib
 import logging
+import time
 from datetime import timedelta
+from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import requests_cache
@@ -24,7 +18,6 @@ from textual.widgets import (
     Label,
     ListItem,
     ListView,
-    MarkdownViewer,
     ProgressBar,
     Rule,
     Select,
@@ -34,6 +27,8 @@ from textual.widgets import (
 from textual.worker import Worker, get_current_worker
 from textual_image.widget import Image as WidgetImage
 
+from api.discord_rpc.rich_presence import rich_presence
+from api.lyrics import download_lyrics, parse_lyrics
 from api.protocols import SongData
 from player.player import PyMusicTermPlayer
 from player.util import format_time, string_to_seconds
@@ -106,11 +101,7 @@ class PyMusicTerm(App):
             with TabPane("Lyrics", id="lyrics"):  # noqa: SIM117
                 with Vertical():
                     yield Input(placeholder="Search for a song", id="lyrics_input")
-                    yield MarkdownViewer(
-                        markdown="No lyrics now",
-                        id="lyrics_results",
-                        show_table_of_contents=False,
-                    )
+                    yield ListView(id="lyrics_viewer")
         yield Rule()
         with Vertical(classes="info_controls"):
             with Center():
@@ -214,6 +205,16 @@ class PyMusicTerm(App):
         if self.player.check_if_song_ended():
             await self.action_next()
 
+        if self.player.lyrics_data:
+            i = 0
+            listview: ListView = self.query_one("#lyrics_viewer")
+            for time, lyrics in self.player.lyrics_data:
+                if time > current_float and i > 1:
+                    item: ListItem = listview.get_child_by_id(f"id-lyrics-{i - 1}")
+                    item.text_select_all()
+                    break
+                i += 1
+
     async def action_return_on_search_tab(self) -> None:
         """Set the search tab as the active tab."""
         tab: TabbedContent = self.query_one("#tabbed_content")
@@ -263,13 +264,25 @@ class PyMusicTerm(App):
         search_results: ListView = self.query_one("#search_results")
         search_results.loading = False
 
+    async def load_lyric(self, listview: ListView, path: Path) -> None:
+        await listview.clear()
+        with path.open() as f:
+            result: list[tuple[int, str]] = parse_lyrics(f.read())
+            i = 0
+            for _, lyric in result:
+                await listview.append(
+                    ListItem(Label(lyric, shrink=True), id=f"id-lyrics-{i}"),
+                )
+                i += 1  # noqa: SIM113
+            self.player.lyrics_data = result
+
     async def update_lyrics_view(self) -> None:
-        markdown: MarkdownViewer = self.query_one("#lyrics_results")
+        listview: ListView = self.query_one("#lyrics_viewer")
         path: Path = (
-            Path(self.setting.lyrics_dir) / f"{self.player.current_song.video_id}.md"
+            Path(self.setting.lyrics_dir) / f"{self.player.current_song.video_id}.lrc"
         )
         if path.exists():
-            await markdown.go(path)
+            await self.load_lyric(listview, path)
         else:
             song: SongData | None = self.player.current_song
             download_lyrics(
@@ -280,7 +293,7 @@ class PyMusicTerm(App):
                 duration=string_to_seconds(song.duration),
             )
             if path.exists():
-                await markdown.go(path)
+                await self.load_lyric(listview, path)
 
     @on(Button.Pressed, "#play_pause")
     async def action_play(self) -> None:

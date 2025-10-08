@@ -34,5 +34,10 @@ def seconds_to_string(seconds: int) -> str:
 
 
 def string_to_seconds(time_str: str) -> int:
-    minutes, secs = map(int, time_str.split(":"))
-    return minutes * 60 + secs
+    parts: list[int] = [int(p) for p in time_str.strip().split(":")]
+
+    while len(parts) < 3:
+        parts.insert(0, 0)
+
+    h, m, s = parts
+    return h * 3600 + m * 60 + s
