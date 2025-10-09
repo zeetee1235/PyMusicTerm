@@ -28,7 +28,7 @@ dependencies = [
     "winrt-windows-storage-streams>=3.2.1; sys_platform == 'win32'",
     "winrt-windows-foundation-collections>=3.2.1; sys_platform == 'win32'",
     "music-tag>=0.4.3",
-    "pypresence",
+    "pypresence; sys_platform != 'android' and platform_system != 'Android'",
     "lrcup>=0.10.1",
 ]
 
