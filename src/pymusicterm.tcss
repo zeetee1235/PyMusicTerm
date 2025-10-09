@@ -78,3 +78,7 @@ Rule {
 .playing {
     background: $primary;
 }
+
+.current_lyrics {
+    background: $primary;
+}

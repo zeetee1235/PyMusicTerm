@@ -207,13 +207,19 @@ class PyMusicTerm(App):
 
         if self.player.lyrics_data:
             i = 0
+            current_index = 0
             listview: ListView = self.query_one("#lyrics_viewer")
             for time, lyrics in self.player.lyrics_data:
-                if time > current_float and i > 1:
-                    item: ListItem = listview.get_child_by_id(f"id-lyrics-{i - 1}")
-                    item.text_select_all()
+                if time > current_float:
+                    current_index: int = i - 1 if i > 1 else 0
                     break
                 i += 1
+
+            for idx, item in enumerate(listview.children):
+                if idx == current_index:
+                    item.add_class("current_lyrics")
+                else:
+                    item.remove_class("current_lyrics")
 
     async def action_return_on_search_tab(self) -> None:
         """Set the search tab as the active tab."""
@@ -275,6 +281,12 @@ class PyMusicTerm(App):
                 )
                 i += 1  # noqa: SIM113
             self.player.lyrics_data = result
+
+    @on(ListView.Selected, "#lyrics_viewer")
+    async def select_lyrics_viewer(self, event: ListView.Selected) -> None:
+        id_: int = int(event.item.id.removeprefix("id-lyrics-"))
+        time, _ = self.player.lyrics_data[id_]
+        self.player.seek_to(time)
 
     async def update_lyrics_view(self) -> None:
         listview: ListView = self.query_one("#lyrics_viewer")
