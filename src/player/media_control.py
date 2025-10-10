@@ -20,6 +20,7 @@ class MediaControl(Protocol):
     def on_volume(self) -> None: ...
     def populate_playlist(self) -> None: ...
     def set_current_song(self, index: int) -> None: ...
+    def quit() -> None: ...
 
 
 class Server(Protocol):
@@ -50,6 +51,9 @@ if setting.os == "win32":
 
         def set_current_song(self, index: int) -> None:
             return super().set_current_song(index)
+
+        def quit(self) -> None:
+            pass
 
 elif setting.os == "android":
     from api.android.termux import MediaControlAndroid  # noqa: F401
@@ -85,3 +89,6 @@ else:
 
         def set_current_song(self, _: int) -> None:
             """Set current song (no-op for MPRIS)"""
+
+        def quit(self) -> None:
+            pass

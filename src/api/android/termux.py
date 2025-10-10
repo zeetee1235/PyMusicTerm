@@ -1,6 +1,7 @@
 import logging
 import shutil
 import subprocess
+import threading
 from pathlib import Path
 from typing import Protocol
 
@@ -161,6 +162,7 @@ class TermuxMediaNotificationWithIPC(TermuxMediaNotification):
     def __init__(self):
         super().__init__()
         self.fifo_path = Path.home() / ".pymusicterm" / "control.fifo"
+        self.stop_event = threading.Event()
         self._setup_fifo()
 
     def _setup_fifo(self):
@@ -257,19 +259,40 @@ class TermuxMediaNotificationWithIPC(TermuxMediaNotification):
         except Exception as e:
             logger.error(f"Failed to show notification with IPC: {e}")
 
-    def listen_for_commands(self):
+    def listen_for_commands(self) -> None:
         """Listen for button press commands (blocking)"""
         if not self.fifo_path:
             return
 
-        try:
-            while True:
+        logger.info("FIFO listener started")
+
+        while not self.stop_event.is_set():
+            try:
+                # open in non-blocking mode with a timeout-like effect
                 with open(self.fifo_path) as fifo:
                     command = fifo.read().strip()
-                    if command and self.player:
-                        self._handle_command(command)
-        except Exception as e:
-            logger.error(f"FIFO listener error: {e}")
+                    if command:
+                        logger.info(f"Received command: {command}")
+                        if self.player:
+                            self._handle_command(command)
+            except Exception as e:
+                if not self.stop_event.is_set():
+                    logger.error(f"FIFO listener error: {e}")
+
+        logger.info("FIFO listener stopped")
+
+    def stop_listener(self) -> None:
+        """Signal the listener thread to stop"""
+        logger.info("Stopping FIFO listener")
+        self.stop_event.set()
+
+        # Write something to the FIFO to unblock the read()
+        try:
+            if self.fifo_path.exists():
+                with open(self.fifo_path, "w") as fifo:
+                    fifo.write("\n")
+        except Exception:
+            pass
 
     def _handle_command(self, command: str):
         """Handle commands from notification buttons"""
@@ -349,3 +372,14 @@ class MediaControlAndroid(MediaControl):
     def set_current_song(self, index: int) -> None:
         """Set current song"""
         self.on_playback()
+
+    def stop(self) -> None:
+        """Gracefully stop notification listener"""
+        if self.notification:
+            self.notification.stop_listener()
+        if self.listener_thread:
+            self.listener_thread.join(timeout=1)
+            self.listener_thread = None
+        if self.notification:
+            self.notification.hide_notification()
+        logger.info("MediaControlAndroid stopped")

@@ -37,7 +37,11 @@ from setting import SettingManager, rename_console
 if TYPE_CHECKING:
     from textual.widget import Widget
 
-    from player.media_control import MediaControlMPRIS, MediaControlWin32
+    from player.media_control import (
+        MediaControlAndroid,
+        MediaControlMPRIS,
+        MediaControlWin32,
+    )
 
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -78,7 +82,9 @@ class PyMusicTerm(App):
             expire_after=timedelta(hours=1),
         )
 
-        self.media_control: MediaControlMPRIS | MediaControlWin32 = MediaControl()
+        self.media_control: (
+            MediaControlMPRIS | MediaControlWin32 | MediaControlAndroid
+        ) = MediaControl()
         self.player = PyMusicTermPlayer(self.setting, self.media_control)
         self.media_control.init(self.player)
 
@@ -463,6 +469,7 @@ async def main() -> None:
     try:
         await app.run_async()
     finally:
+        app.media_control.quit()
         task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
             await task
