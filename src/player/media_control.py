@@ -1,19 +1,16 @@
+import logging
 from typing import Protocol
 
 from api.protocols import PyMusicTermPlayer
 from setting import SettingManager
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 setting = SettingManager()
 if setting.os == "win32":
     from api.smtc.smtc import MediaControlWin32 as MediaControlWin
-
 else:
-    from mpris_server import EventAdapter  # pyright: ignore[reportMissingImports]
-    from mpris_server import (  # pyright: ignore[reportMissingImports]
-        Server as ServerMpris,
-    )
-
-    from api.mpris.mpris import HAdapter
+    from api.mpris.mpris import DBusAdapter
 
 
 class MediaControl(Protocol):
@@ -56,27 +53,33 @@ if setting.os == "win32":
 
 else:
 
-    class MediaControlMPRIS(MediaControl):
+    class MediaControlMPRIS:
+        """Drop-in replacement for mpris_server based implementation"""
+
         def __init__(self) -> None:
-            self.adapter: HAdapter = HAdapter()
-            self.mpris = ServerMpris(name="PyMusicTerm", adapter=self.adapter)
-            self.event = EventAdapter(root=self.mpris.root, player=self.mpris.player)
+            self.adapter: DBusAdapter = DBusAdapter()
+            logger.info("MediaControlMPRIS initialized")
 
         def init(self, player: PyMusicTermPlayer) -> None:
+            """Initialize with player and start background loop"""
+            logger.info("Initializing MediaControlMPRIS with player")
             self.adapter.setup(player)
-            self.mpris.loop(background=True)
+            self.adapter.start_background()
 
         def on_playback(self) -> None:
-            return self.event.on_playback()
+            """Handle playback events"""
+            return self.adapter.on_playback()
 
         def on_playpause(self) -> None:
-            return self.event.on_playpause()
+            """Handle play/pause events"""
+            return self.adapter.on_playpause()
 
         def on_volume(self) -> None:
-            return self.event.on_volume()
+            """Handle volume events"""
+            return self.adapter.on_volume()
 
         def populate_playlist(self) -> None:
-            pass
+            """Populate playlist (no-op for MPRIS)"""
 
         def set_current_song(self, _: int) -> None:
-            pass
+            """Set current song (no-op for MPRIS)"""

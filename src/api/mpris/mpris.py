@@ -1,173 +1,377 @@
-import sys
-from typing import Literal, NoReturn, override
+import asyncio
+import logging
+import threading
 
-from mpris_server import MetadataObj, Track  # pyright: ignore[reportMissingImports]
-from mpris_server.adapters import (  # pyright: ignore[reportMissingImports]
-    MprisAdapter,
-    PlayState,
-)
-from mpris_server.base import MIME_TYPES, URI  # pyright: ignore[reportMissingImports]
+from dbus_next import BusType, Variant
+from dbus_next.aio import MessageBus
+from dbus_next.service import PropertyAccess, ServiceInterface, dbus_property, method
 
 from api.protocols import PyMusicTermPlayer
 from api.ytmusic import SongData
 
+logger: logging.Logger = logging.getLogger(__name__)
 
-class HAdapter(MprisAdapter):
-    def __init__(self) -> None:
-        super().__init__()
-        self.player: PyMusicTermPlayer | None = None
 
-    def setup(self, player: PyMusicTermPlayer) -> None:
-        self.player = player
+class MPRISInterface(ServiceInterface):
+    """MPRIS2 Root Interface"""
 
-    @override
-    def get_uri_schemes(self) -> list[str]:
-        return URI
+    def __init__(self, adapter: "DBusAdapter") -> None:
+        super().__init__("org.mpris.MediaPlayer2")
+        self.adapter: DBusAdapter = adapter
 
-    @override
-    def get_mime_types(self) -> list[str]:
-        return MIME_TYPES
+    @method()
+    def Raise(self) -> None:
+        """Bring the media player to the front"""
 
-    @override
-    def can_quit(self) -> bool:
-        return True
+    @method()
+    def Quit(self) -> None:
+        """Quit the media player"""
+        import sys
 
-    @override
-    def quit(self) -> NoReturn:
         sys.exit()
 
-    @override
-    def get_current_position(self) -> float:
-        return self.player.position
+    @dbus_property(access=PropertyAccess.READ)
+    def CanQuit(self) -> "b":
+        return True
 
-    @override
-    def next(self) -> None:
-        self.player.next()
-
-    @override
-    def previous(self) -> None:
-        self.player.previous()
-
-    @override
-    def pause(self) -> None:
-        self.player.pause_song()
-
-    @override
-    def resume(self) -> None:
-        self.player.resume_song()
-
-    @override
-    def stop(self) -> None:
-        self.player.stop()
-
-    @override
-    def play(self) -> None:
-        self.player.playing = True
-
-    @override
-    def get_playstate(self) -> PlayState:
-        if not self.player.playing:
-            return PlayState.PAUSED
-        return PlayState.PLAYING
-
-    @override
-    def seek(self, time: int, track_id: None = None) -> None:
-        self.player.seek_to(time / 1000000)
-
-    @override
-    def is_repeating(self) -> bool:
+    @dbus_property(access=PropertyAccess.READ)
+    def CanRaise(self) -> "b":
         return False
 
-    @override
-    def is_playlist(self) -> bool:
-        return self.can_go_next() or self.can_go_previous()
+    @dbus_property(access=PropertyAccess.READ)
+    def HasTrackList(self) -> "b":
+        return False
 
-    @override
-    def set_repeating(self, value: bool) -> None:
-        self.player.loop_at_end()
+    @dbus_property(access=PropertyAccess.READ)
+    def Identity(self) -> "s":
+        return "PyMusicTerm"
 
-    @override
-    def set_loop_status(self, value: str) -> None:
-        pass
+    @dbus_property(access=PropertyAccess.READ)
+    def SupportedUriSchemes(self) -> "as":
+        return ["file", "http", "https"]
 
-    @override
-    def get_rate(self) -> float:
+    @dbus_property(access=PropertyAccess.READ)
+    def SupportedMimeTypes(self) -> "as":
+        return ["audio/mpeg", "audio/mp4", "audio/ogg", "audio/flac"]
+
+    @dbus_property(access=PropertyAccess.READ)
+    def DesktopEntry(self) -> "s":
+        return "pymusicterm"
+
+    @dbus_property(access=PropertyAccess.READ)
+    def Fullscreen(self) -> "b":
+        return False
+
+    @dbus_property(access=PropertyAccess.READ)
+    def CanSetFullscreen(self) -> "b":
+        return False
+
+
+class MPRISPlayerInterface(ServiceInterface):
+    """MPRIS2 Player Interface"""
+
+    def __init__(self, adapter: "DBusAdapter") -> None:
+        super().__init__("org.mpris.MediaPlayer2.Player")
+        self.adapter = adapter
+        self._rate = 1.0
+        self._volume = 1.0
+        self._loop_status = "None"
+        self._shuffle = False
+
+    @method()
+    def Next(self) -> None:
+        """Skip to next track"""
+        logger.info("MPRIS: Next called")
+        if self.adapter.player:
+            self.adapter.player.next()
+            self.adapter.schedule_update()
+
+    @method()
+    def Previous(self) -> None:
+        """Skip to previous track"""
+        logger.info("MPRIS: Previous called")
+        if self.adapter.player:
+            self.adapter.player.previous()
+            self.adapter.schedule_update()
+
+    @method()
+    def Pause(self) -> None:
+        """Pause playback"""
+        logger.info("MPRIS: Pause called")
+        if self.adapter.player:
+            self.adapter.player.pause_song()
+            self.adapter.schedule_update()
+
+    @method()
+    def PlayPause(self) -> None:
+        """Toggle play/pause"""
+        logger.info("MPRIS: PlayPause called")
+        if self.adapter.player:
+            if self.adapter.player.playing:
+                self.adapter.player.pause_song()
+            else:
+                self.adapter.player.resume_song()
+            self.adapter.schedule_update()
+
+    @method()
+    def Stop(self) -> None:
+        """Stop playback"""
+        logger.info("MPRIS: Stop called")
+        if self.adapter.player:
+            self.adapter.player.stop()
+            self.adapter.schedule_update()
+
+    @method()
+    def Play(self) -> None:
+        """Start or resume playback"""
+        logger.info("MPRIS: Play called")
+        if self.adapter.player:
+            self.adapter.player.resume_song()
+            self.adapter.schedule_update()
+
+    @method()
+    def Seek(self, offset: "x") -> None:
+        """Seek forward or backward (microseconds)"""
+        logger.info(f"MPRIS: Seek called with offset {offset}")
+        if self.adapter.player:
+            current = self.adapter.player.position
+            new_pos = current + (offset / 1000000)
+            self.adapter.player.seek_to(max(0, new_pos))
+
+    @method()
+    def SetPosition(self, track_id: "o", position: "x") -> None:
+        """Set absolute position (microseconds)"""
+        logger.info(f"MPRIS: SetPosition called with position {position}")
+        if self.adapter.player:
+            self.adapter.player.seek_to(position / 1000000)
+
+    @method()
+    def OpenUri(self, uri: "s") -> None:
+        """Open a URI"""
+
+    @dbus_property(access=PropertyAccess.READ)
+    def PlaybackStatus(self) -> "s":
+        """Current playback status: Playing, Paused, or Stopped"""
+        if not self.adapter.player:
+            return "Stopped"
+        return "Playing" if self.adapter.player.playing else "Paused"
+
+    @dbus_property(access=PropertyAccess.READ)
+    def Metadata(self) -> "a{sv}":
+        """Current track metadata"""
+        if not self.adapter.player or not self.adapter.player.list_of_downloaded_songs:
+            return {}
+
+        try:
+            song_data: SongData = self.adapter.player.list_of_downloaded_songs[
+                self.adapter.player.current_song_index
+            ]
+
+            track_id = f"/org/mpris/MediaPlayer2/Track/{self.adapter.player.current_song_index}"
+            length = int(self.adapter.player.song_length * 1000000)
+
+            metadata = {
+                "mpris:trackid": Variant("o", track_id),
+                "mpris:length": Variant("x", length),
+                "mpris:artUrl": Variant(
+                    "s",
+                    f"https://i.ytimg.com/vi/{song_data.video_id}/maxresdefault.jpg",
+                ),
+                "xesam:title": Variant("s", song_data.title),
+                "xesam:album": Variant("s", song_data.album),
+                "xesam:artist": Variant("as", [song_data.get_formatted_artists()]),
+                "xesam:url": Variant(
+                    "s",
+                    f"https://www.youtube.com/watch?v={song_data.video_id}",
+                ),
+            }
+
+            return metadata
+        except Exception as e:
+            logger.error(f"Error getting metadata: {e}")
+            return {}
+
+    @dbus_property(access=PropertyAccess.READ)
+    def Position(self) -> "x":
+        """Current position in microseconds"""
+        if self.adapter.player:
+            return int(self.adapter.player.position * 1000000)
+        return 0
+
+    @dbus_property(access=PropertyAccess.READ)
+    def MinimumRate(self) -> "d":
         return 1.0
 
-    @override
-    def set_rate(self, value: float) -> None:
-        pass
+    @dbus_property(access=PropertyAccess.READ)
+    def MaximumRate(self) -> "d":
+        return 1.0
 
-    @override
-    def get_shuffle(self) -> bool:
-        return False
-
-    @override
-    def set_shuffle(self, value: bool) -> Literal[False]:
-        return False
-
-    @override
-    def is_mute(self) -> bool:
-        return False
-
-    @override
-    def can_go_next(self) -> bool:
+    @dbus_property(access=PropertyAccess.READ)
+    def CanGoNext(self) -> "b":
         return True
 
-    @override
-    def can_go_previous(self) -> bool:
+    @dbus_property(access=PropertyAccess.READ)
+    def CanGoPrevious(self) -> "b":
         return True
 
-    @override
-    def can_play(self) -> bool:
+    @dbus_property(access=PropertyAccess.READ)
+    def CanPlay(self) -> "b":
         return True
 
-    @override
-    def can_pause(self) -> bool:
+    @dbus_property(access=PropertyAccess.READ)
+    def CanPause(self) -> "b":
         return True
 
-    @override
-    def can_seek(self) -> bool:
+    @dbus_property(access=PropertyAccess.READ)
+    def CanSeek(self) -> "b":
         return True
 
-    @override
-    def can_control(self) -> bool:
+    @dbus_property(access=PropertyAccess.READ)
+    def CanControl(self) -> "b":
         return True
 
-    @override
-    def get_current_track(self) -> Track:
-        song_data: SongData = self.player.list_of_downloaded_songs[
-            self.player.current_song_index
-        ]
-        title: str = song_data.title
-        artist: list[str] = [song_data.get_formatted_artists()]
-        album: str = song_data.album
-        length: float = self.player.song_length
+    @dbus_property()
+    def Rate(self) -> "d":
+        return self._rate
 
-        return Track(
-            title=title,
-            artists=artist,
-            album=album,
-            length=length,
-            art_url=f"https://i.ytimg.com/vi/{song_data.video_id}/maxresdefault.jpg",
+    @Rate.setter
+    def set_rate(self, val: "d") -> None:
+        self._rate = val
+
+    @dbus_property()
+    def Volume(self) -> "d":
+        return self._volume
+
+    @Volume.setter
+    def set_volume(self, val: "d") -> None:
+        self._volume = val
+
+    @dbus_property()
+    def LoopStatus(self) -> "s":
+        return self._loop_status
+
+    @LoopStatus.setter
+    def set_loop_status(self, val: "s") -> None:
+        self._loop_status = val
+
+    @dbus_property()
+    def Shuffle(self) -> "b":
+        return self._shuffle
+
+    @Shuffle.setter
+    def set_shuffle(self, val: "b") -> None:
+        self._shuffle = val
+
+
+class DBusAdapter:
+    """Adapter for dbus-next MPRIS implementation"""
+
+    def __init__(self) -> None:
+        self.player: PyMusicTermPlayer | None = None
+        self.bus: MessageBus | None = None
+        self.root_interface: MPRISInterface | None = None
+        self.player_interface: MPRISPlayerInterface | None = None
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._thread: threading.Thread | None = None
+        self._started = False
+
+    def setup(self, player: PyMusicTermPlayer) -> None:
+        """Setup the adapter with a player instance"""
+        self.player = player
+        logger.info("DBusAdapter setup complete")
+
+    def _run_event_loop(self, loop: asyncio.AbstractEventLoop) -> None:
+        """Run the asyncio event loop in a separate thread"""
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_forever()
+        except Exception as e:
+            logger.error(f"Event loop error: {e}")
+        finally:
+            loop.close()
+
+    async def _start_server(self) -> None:
+        """Start the DBus server"""
+        try:
+            logger.info("Connecting to session bus...")
+            self.bus = await MessageBus(bus_type=BusType.SESSION).connect()
+            logger.info("Connected to session bus")
+
+            self.root_interface = MPRISInterface(self)
+            self.player_interface = MPRISPlayerInterface(self)
+
+            self.bus.export("/org/mpris/MediaPlayer2", self.root_interface)
+            self.bus.export("/org/mpris/MediaPlayer2", self.player_interface)
+            logger.info("Interfaces exported")
+
+            await self.bus.request_name("org.mpris.MediaPlayer2.PyMusicTerm")
+            logger.info("MPRIS DBus server started successfully")
+
+            self._started = True
+
+        except Exception as e:
+            logger.error(f"Failed to start DBus server: {e}", exc_info=True)
+            self._started = False
+
+    def start_background(self) -> None:
+        """Start the DBus server in a background thread"""
+        if self._thread is not None and self._thread.is_alive():
+            logger.info("DBus server already running")
+            return
+
+        logger.info("Starting DBus server in background thread...")
+        self._loop = asyncio.new_event_loop()
+
+        self._thread = threading.Thread(
+            target=self._run_event_loop,
+            args=(self._loop,),
+            daemon=True,
+            name="MPRIS-DBus-Thread",
         )
+        self._thread.start()
 
-    @override
-    def metadata(self) -> MetadataObj:
-        song_data: SongData = self.player.list_of_downloaded_songs[
-            self.player.current_song_index
-        ]
-        title: str = song_data.title
-        artist: list[str] = [song_data.get_formatted_artists()]
-        album: str = song_data.album
-        length: float = self.player.song_length * 1000000
+        # Schedule the server start in the new loop
+        asyncio.run_coroutine_threadsafe(self._start_server(), self._loop)
 
-        return MetadataObj(
-            album=album,
-            title=title,
-            artists=artist,
-            length=length,
-            auto_rating=0,
-            art_url=f"https://i.ytimg.com/vi/{song_data.video_id}/maxresdefault.jpg",
-            url=f"https://www.youtube.com/watch?v={song_data.video_id}",
-        )
+        # Give it a moment to start
+        import time
+
+        time.sleep(0.5)
+
+        if self._started:
+            logger.info("DBus server thread started successfully")
+        else:
+            logger.warning("DBus server may not have started correctly")
+
+    def schedule_update(self) -> None:
+        """Schedule a property update in the event loop"""
+        if self._loop and self.player_interface:
+            asyncio.run_coroutine_threadsafe(
+                self._emit_properties_changed(),
+                self._loop,
+            )
+
+    async def _emit_properties_changed(self) -> None:
+        """Emit properties changed signal"""
+        try:
+            if self.player_interface:
+                # Don't wrap in Variant - emit_properties_changed does that automatically
+                changed_properties = {
+                    "PlaybackStatus": self.player_interface.PlaybackStatus,
+                    "Metadata": self.player_interface.Metadata,
+                }
+                self.player_interface.emit_properties_changed(changed_properties)
+                logger.debug("Properties changed signal emitted")
+        except Exception as e:
+            logger.error(f"Error emitting properties changed: {e}", exc_info=True)
+
+    def on_playback(self) -> None:
+        """Called when playback state changes"""
+        self.schedule_update()
+
+    def on_playpause(self) -> None:
+        """Called when play/pause state changes"""
+        self.schedule_update()
+
+    def on_volume(self) -> None:
+        """Called when volume changes"""
