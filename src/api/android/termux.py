@@ -1,9 +1,3 @@
-"""
-Termux Media Notification Handler
-Uses termux-api for native Android notifications
-Requires: pkg install termux-api && pip install termux-api (optional Python wrapper)
-"""
-
 import logging
 import shutil
 import subprocess
@@ -22,7 +16,7 @@ class MediaControl(Protocol):
     def set_current_song(self, index: int) -> None: ...
 
 
-def check_termux_api():
+def check_termux_api() -> bool:
     """Check if termux-api is installed"""
     return shutil.which("termux-notification") is not None
 
@@ -100,36 +94,36 @@ class TermuxMediaNotification:
                 cmd.extend(
                     [
                         "--button1",
-                        "⏮️ Previous",
+                        "⏮ Previous",
                         "--button1-action",
                         "termux-toast 'Previous'",
                         "--button2",
-                        "⏸️ Pause",
+                        "⏸ Pause",
                         "--button2-action",
                         "termux-toast 'Pause'",
                         "--button3",
-                        "⏭️ Next",
+                        "⏭ Next",
                         "--button3-action",
                         "termux-toast 'Next'",
-                    ]
+                    ],
                 )
             else:
                 # Previous, Play, Next
                 cmd.extend(
                     [
                         "--button1",
-                        "⏮️ Previous",
+                        "⏮ Previous",
                         "--button1-action",
                         "termux-toast 'Previous'",
                         "--button2",
-                        "▶️ Play",
+                        "▶ Play",
                         "--button2-action",
                         "termux-toast 'Play'",
                         "--button3",
-                        "⏭️ Next",
+                        "⏭ Next",
                         "--button3-action",
                         "termux-toast 'Next'",
-                    ]
+                    ],
                 )
 
             # Add action on notification tap
@@ -137,7 +131,7 @@ class TermuxMediaNotification:
                 [
                     "--action",
                     "termux-toast 'PyMusicTerm'",
-                ]
+                ],
             )
 
             # Execute command
@@ -226,35 +220,35 @@ class TermuxMediaNotificationWithIPC(TermuxMediaNotification):
                 cmd.extend(
                     [
                         "--button1",
-                        "⏮️",
+                        "⏮",
                         "--button1-action",
                         f"echo 'previous' > {fifo_str}",
                         "--button2",
-                        "⏸️",
+                        "⏸",
                         "--button2-action",
                         f"echo 'pause' > {fifo_str}",
                         "--button3",
-                        "⏭️",
+                        "⏭",
                         "--button3-action",
                         f"echo 'next' > {fifo_str}",
-                    ]
+                    ],
                 )
             else:
                 cmd.extend(
                     [
                         "--button1",
-                        "⏮️",
+                        "⏮",
                         "--button1-action",
                         f"echo 'previous' > {fifo_str}",
                         "--button2",
-                        "▶️",
+                        "▶",
                         "--button2-action",
                         f"echo 'play' > {fifo_str}",
                         "--button3",
-                        "⏭️",
+                        "⏭",
                         "--button3-action",
                         f"echo 'next' > {fifo_str}",
-                    ]
+                    ],
                 )
 
             self._run_termux_command(cmd)
