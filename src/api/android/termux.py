@@ -311,29 +311,25 @@ class TermuxMediaNotificationWithIPC(TermuxMediaNotification):
 class MediaControlAndroid(MediaControl):
     """Termux media notification control - drop-in replacement"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         try:
-            # Use IPC version for working buttons
             self.notification = TermuxMediaNotificationWithIPC()
             logger.info("Termux media notification initialized")
         except Exception as e:
             logger.warning(f"Failed to initialize Termux notifications: {e}")
             self.notification = None
+        self.listener_thread = None  # <-- add this
 
     def init(self, player) -> None:
-        """Initialize with player instance"""
         if self.notification:
             self.notification.player = player
             self.on_playback()
 
-            # Start button listener in background thread
-            import threading
-
-            listener_thread = threading.Thread(
+            self.listener_thread = threading.Thread(
                 target=self.notification.listen_for_commands,
                 daemon=True,
             )
-            listener_thread.start()
+            self.listener_thread.start()
 
     def on_playback(self) -> None:
         """Called when track changes"""
