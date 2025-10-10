@@ -69,6 +69,8 @@ class PyMusicTerm(App):
 
         if self.setting.os == "win32":
             from player.media_control import MediaControlWin32 as MediaControl  # noqa: I001, PLC0415
+        elif setting.os == "android":
+            from player.media_control import MediaControlAndroid as MediaControl  # noqa: I001, PLC0415
         else:
             from player.media_control import MediaControlMPRIS as MediaControl  # noqa: I001, PLC0415
         requests_cache.install_cache(

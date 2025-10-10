@@ -1,9 +1,3 @@
-"""
-Termux Media Notification Handler
-Uses termux-api for native Android notifications
-Requires: pkg install termux-api && pip install termux-api (optional Python wrapper)
-"""
-
 import logging
 import shutil
 import subprocess
