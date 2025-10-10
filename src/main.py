@@ -469,7 +469,7 @@ async def main() -> None:
     try:
         await app.run_async()
     finally:
-        app.media_control.quit()
+        app.media_control.stop()
         task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
             await task
