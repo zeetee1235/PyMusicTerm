@@ -21,6 +21,31 @@ CACHE_DIR = Path(APP_DIR / "cache")
 COVER_DIR = Path(APP_DIR / "covers")
 
 
+def is_android() -> bool:
+    """Check if running on Android/Termux"""
+    # Method 1: Check for Termux-specific environment variable
+    if os.environ.get("ANDROID_ROOT"):
+        return True
+
+    # Method 2: Check for Android system properties
+    if os.path.exists("/system/build.prop"):
+        return True
+
+    # Method 3: Check sys.platform and additional Android indicators
+    if sys.platform == "linux":
+        try:
+            # Check if running in Termux
+            if "com.termux" in os.environ.get("PREFIX", ""):
+                return True
+            # Check for Android-specific paths
+            if os.path.exists("/data/data/com.termux"):  # noqa: PTH110
+                return True
+        except:
+            pass
+
+    return False
+
+
 def fetch_files_from_folder(folder_path: str, ending: str = "mp3") -> list[str | None]:
     """
     Fetch all the files from a folder.
@@ -51,13 +76,19 @@ def resource_path(relative_path: str) -> str:
     return Path(base_path, relative_path).resolve()
 
 
+def get_platform():
+    if is_android():
+        return "android"
+    return sys.platform
+
+
 @dataclass
 class Setting:
     """All the settings of the app."""
 
     volume: float = 1.0
     loop: bool = False
-    os: str = sys.platform
+    os: str = get_platform()
     app_dir: str = str(APP_DIR)
     music_dir: str = str(MUSIC_DIR)
     setting_file: str = str(SETTING_FILE)
