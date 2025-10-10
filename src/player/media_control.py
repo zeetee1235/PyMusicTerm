@@ -52,7 +52,7 @@ if setting.os == "win32":
             return super().set_current_song(index)
 
 elif setting.os == "android":
-    from api.android.termux import MediaControlAndroid
+    pass
 else:
 
     class MediaControlMPRIS:
