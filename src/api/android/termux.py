@@ -243,7 +243,7 @@ class TermuxMediaNotificationWithIPC(TermuxMediaNotification):
                         "--button1-action",
                         f"echo 'previous' > {fifo_str}",
                         "--button2",
-                        "▶",
+                        "▶︎",
                         "--button2-action",
                         f"echo 'play' > {fifo_str}",
                         "--button3",
