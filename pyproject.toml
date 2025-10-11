@@ -28,6 +28,7 @@ dependencies = [
     "lrcup>=0.10.1",
     "dbus-next>=0.2.3",
     "yt-dlp>=2025.9.26",
+    "textual-serve>=1.1.2",
 ]
 
 [tool.pytest.ini_options]
