@@ -177,3 +177,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# linux test
+test.sh
+run.sh
+run_with_ssl_fix.sh
