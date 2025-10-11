@@ -55,8 +55,6 @@ if setting.os == "win32":
         def stop(self) -> None:
             pass
 
-elif setting.os == "android":
-    from api.android.termux import MediaControlAndroid  # noqa: F401
 else:
 
     class MediaControlMPRIS:

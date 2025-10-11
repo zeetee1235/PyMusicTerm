@@ -38,7 +38,6 @@ if TYPE_CHECKING:
     from textual.widget import Widget
 
     from player.media_control import (
-        MediaControlAndroid,
         MediaControlMPRIS,
         MediaControlWin32,
     )
@@ -73,8 +72,6 @@ class PyMusicTerm(App):
 
         if self.setting.os == "win32":
             from player.media_control import MediaControlWin32 as MediaControl  # noqa: I001, PLC0415
-        elif setting.os == "android":
-            from player.media_control import MediaControlAndroid as MediaControl  # noqa: I001, PLC0415
         else:
             from player.media_control import MediaControlMPRIS as MediaControl  # noqa: I001, PLC0415
         requests_cache.install_cache(
@@ -82,9 +79,7 @@ class PyMusicTerm(App):
             expire_after=timedelta(hours=1),
         )
 
-        self.media_control: (
-            MediaControlMPRIS | MediaControlWin32 | MediaControlAndroid
-        ) = MediaControl()
+        self.media_control: MediaControlMPRIS | MediaControlWin32 = MediaControl()
         self.player = PyMusicTermPlayer(self.setting, self.media_control)
         self.media_control.init(self.player)
 
