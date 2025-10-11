@@ -466,12 +466,12 @@ class PyMusicTerm(App):
         """Handle exceptions to prevent them from being displayed in UI."""
         logger = logging.getLogger(__name__)
         
-        # Rich Presence 관련 에러는 조용히 로깅만
+        # Log Rich Presence-related errors quietly
         if "rich_presence" in str(error) or "Discord" in str(error) or "pypresence" in str(error):
             logger.debug(f"Rich Presence error (suppressed): {error}")
             return
             
-        # 다른 중요한 에러는 로깅하지만 UI에 표시하지 않음
+        # Log other important errors, but do not display them in the UI.
         logger.error(f"Application error: {error}")
         
     async def on_exception(self, error: Exception) -> None:
@@ -483,12 +483,12 @@ async def main() -> None:
     setting = SettingManager()
     app = PyMusicTerm(setting)
     
-    # Rich Presence 태스크를 안전하게 실행하도록 래핑
+    # Rich Presence tesk safety lapping
     async def safe_rich_presence():
         try:
             await rich_presence(app.player, start=time.time())
         except Exception as e:
-            # Rich Presence 에러가 앱을 중단시키지 않도록 로깅만 수행
+            # just logging Rich Presence error dont stop app
             logger = logging.getLogger(__name__)
             logger.warning(f"Rich Presence failed: {e}")
     

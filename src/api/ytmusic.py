@@ -93,7 +93,7 @@ class YTMusic:
             title: str = result.get("title", "Unknown")
             artists_data = result.get("artists", [])
             artist: list[str] = [artist["name"] for artist in artists_data if isinstance(artist, dict) and "name" in artist]
-            # 아티스트 정보가 없으면 기본값 설정
+            
             if not artist:
                 artist = ["Unknown Artist"]
             duration: str = result.get("duration", "Unknown")

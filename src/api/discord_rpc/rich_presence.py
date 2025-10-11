@@ -74,7 +74,7 @@ async def rich_presence(player: PyMusicTermPlayer, start: int) -> None:
                         start=start,
                     )
                     
-                    # 성공시 retry count 초기화
+                    # if succes reset retry count
                     retry_count = 0
 
                 except KeyError as e:
@@ -86,7 +86,7 @@ async def rich_presence(player: PyMusicTermPlayer, start: int) -> None:
                     retry_count += 1
                     if retry_count >= MAX_RETRIES:
                         logger.error("Max retries exceeded for Rich Presence updates")
-                        return  # 조용히 종료
+                        return  # end
                     await asyncio.sleep(RETRY_DELAY)
                     continue
 
@@ -105,12 +105,12 @@ async def rich_presence(player: PyMusicTermPlayer, start: int) -> None:
                 
     except DiscordNotFound:
         logger.info("Discord not found - Rich Presence disabled")
-        return  # 조용히 종료
+        return  # end
     except Exception as e:
         logger.warning(f"Rich Presence initialization failed: {e}")
-        return  # 조용히 종료
+        return  # end
     finally:
-        # 정리 작업
+        # organize process
         if rpc:
             try:
                 await rpc.clear()
