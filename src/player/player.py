@@ -92,6 +92,8 @@ class PyMusicTermPlayer:
 
     def previous(self) -> int:
         """Play the previous song."""
+        if not self.list_of_downloaded_songs:
+            return 0
         if self.current_song_index == 0:
             self.current_song_index = len(self.list_of_downloaded_songs) - 1
         else:
@@ -107,6 +109,8 @@ class PyMusicTermPlayer:
 
     def next(self) -> int:
         """Play the next song."""
+        if not self.list_of_downloaded_songs:
+            return 0
         if self.current_song_index == len(self.list_of_downloaded_songs) - 1:
             self.current_song_index = 0
         else:

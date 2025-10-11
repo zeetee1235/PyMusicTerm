@@ -230,7 +230,8 @@ def rename_console(name: str, platform: str = sys.platform) -> None:
         command: str = f"title {name}"
         os.system(command)  # noqa: S605
     else:
-        logger.error(f"\33]0;{name}\a (Error when setting terminal name)")  # noqa: G004
+        # Set terminal title for Linux/Unix systems
+        print(f"\033]0;{name}\007", end="", flush=True)
 
 
 '''def have_internet() -> bool:

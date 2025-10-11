@@ -293,6 +293,9 @@ class PyMusicTerm(App):
 
     async def update_lyrics_view(self) -> None:
         listview: ListView = self.query_one("#lyrics_viewer")
+        if not self.player.current_song:
+            await listview.clear()
+            return
         path: Path = (
             Path(self.setting.lyrics_dir) / f"{self.player.current_song.video_id}.lrc"
         )
