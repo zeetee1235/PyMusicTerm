@@ -46,15 +46,20 @@ class YTMusic:
         results: list[dict] = self.client.search(query, filter)
         r: list[SongData] = []
         for result in results:
-            title: str = result.get("title", "Unknown")
+            title: str = result.get("title", "Unknown Title")
             artist: list[str] = [artist["name"] for artist in result.get("artists", [])]
-            duration: str = result.get("duration", "Unknown")
-            video_id: str = result.get("videoId", "Unknown")
+            if not artist:
+                artist = ["Unknown Artist"]
+            duration: str = result.get("duration", "Unknown Duration")
+            video_id: str = result.get(
+                "videoId",
+                "dQw4w9WgXcQ",
+            )  # Default to a dummy video id
             thumbnail: ImageFile = Image.open(
                 requests.get(result["thumbnails"][0]["url"], stream=True).raw,  # noqa: S113
             )
             x = result.get("album", None)
-            album = x.get("name") if x else "Unknown"
+            album = x.get("name") if x else "Unknown Album"
             r.append(
                 SongData(
                     title=title,

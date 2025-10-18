@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from random import shuffle
 
@@ -11,18 +12,21 @@ from player.media_control import MediaControl
 from player.util import format_time
 from setting import SettingManager, fetch_files_from_folder
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 class PyMusicTermPlayer:
     def __init__(
         self,
         setting: SettingManager,
         media_control: MediaControl,
+        downloader: Downloader,
     ) -> None:
         self.media_control: MediaControl = media_control
         self.setting: SettingManager = setting
         self.music_player = MusicPlayer(self.setting.volume)
         self.ytm = YTMusic()
-        self.downloader = Downloader(self.setting.music_dir)
+        self.downloader: Downloader = downloader
         self.list_of_downloaded_songs: list[SongData] = self.get_downloaded_songs()
         self.dict_of_song_result: dict[str, SongData] = {}
         self.current_song_index = 0
@@ -76,16 +80,10 @@ class PyMusicTermPlayer:
         self.media_control.set_current_song(self.current_song_index)
         self.media_control.on_playback()
 
-    def play_from_list(self, id: int) -> None:  # noqa: A002
-        """
-        Play a song from the list of downloaded songs.
-        """
-        if not isinstance(id, int):
-            msg: str = f"id must be an integer, not {type(id)}"
-            raise TypeError(msg)
-        self.current_song_index: int = id
-        self.current_song = self.list_of_downloaded_songs[id]
-        self.music_player.load_song(self.list_of_downloaded_songs[id].path)
+    def play_from_list(self, index: int) -> None:
+        self.current_song_index: int = index
+        self.current_song = self.list_of_downloaded_songs[index]
+        self.music_player.load_song(self.list_of_downloaded_songs[index].path)
         self.music_player.play_song()
         self.media_control.set_current_song(self.current_song_index)
         self.media_control.on_playback()
@@ -161,6 +159,13 @@ class PyMusicTermPlayer:
         if self.music_player.loop_at_end:
             return False
         return bool(self.music_player.position == 0 and not self.music_player.playing)
+
+    def delete_song(self, index: int) -> None:
+        self.next()
+        song: SongData = self.list_of_downloaded_songs[index]
+        self.downloader.delete(song)
+        self.list_of_downloaded_songs.pop(index)
+        logger.info("Deleted song: %s", song)
 
     def stop(self) -> None:
         self.music_player.unload_song()
