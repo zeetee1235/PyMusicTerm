@@ -38,7 +38,6 @@
     "queue_handler": {
       "class": "logging.handlers.QueueHandler",
       "handlers": [
-        "stderr",
         "file_json"
       ],
       "respect_handler_level": true
