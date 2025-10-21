@@ -229,9 +229,9 @@ def rename_console(name: str, platform: str = sys.platform) -> None:
     if platform == "win32":
         command: str = f"title {name}"
         os.system(command)  # noqa: S605
-    else:
+    if platform in ("linux", "darwin"):
         # Set terminal title for Linux/Unix systems
-        print(f"\033]0;{name}\007", end="", flush=True)
+        #print(f"\033]0;{name}\007", end="", flush=True)
 
 
 '''def have_internet() -> bool:
