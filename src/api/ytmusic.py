@@ -1,6 +1,8 @@
 import logging
+import ssl
 from dataclasses import dataclass
 
+import certifi
 import requests
 import ytmusicapi
 from PIL import Image
@@ -19,7 +21,26 @@ class LyricsResult:
 
 class YTMusic:
     def __init__(self) -> None:
-        self.client = ytmusicapi.YTMusic()
+        # Create a custom session with proper SSL configuration
+        try:
+            session = requests.Session()
+            session.verify = certifi.where()
+            
+            # Create SSL context explicitly
+            ssl_context = ssl.create_default_context(cafile=certifi.where())
+            
+            # Create custom adapter with SSL context
+            adapter = requests.adapters.HTTPAdapter()
+            session.mount('https://', adapter)
+            
+            # Initialize YTMusic with custom session
+            self.client = ytmusicapi.YTMusic()
+            self.client._session = session
+            
+            logger.info("YTMusic initialized with custom SSL session")
+        except Exception as e:
+            logger.warning(f"Failed to create custom SSL session: {e}, falling back to default")
+            self.client = ytmusicapi.YTMusic()
 
     def search(self, query: str, filter: str = "songs") -> list[SongData]:  # noqa: A002
         """
@@ -44,6 +65,7 @@ class YTMusic:
             raise TypeError(msg)
 
         results: list[dict] = self.client.search(query, filter)
+
         r: list[SongData] = []
         for result in results:
             title: str = result.get("title", "Unknown Title")

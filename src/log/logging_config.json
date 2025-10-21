@@ -38,7 +38,6 @@
     "queue_handler": {
       "class": "logging.handlers.QueueHandler",
       "handlers": [
-        "stderr",
         "file_json"
       ],
       "respect_handler_level": true
@@ -50,6 +49,13 @@
       "handlers": [
         "queue_handler"
       ]
+    },
+    "api.discord_rpc.rich_presence": {
+      "level": "ERROR",
+      "handlers": [
+        "queue_handler"
+      ],
+      "propagate": false
     }
   }
 }

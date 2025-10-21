@@ -336,7 +336,7 @@ class PyMusicTerm(App):
                 song.video_id,
                 track=song.title,
                 album=song.album,
-                artist=song.artist[0],
+                artist=song.artist[0] if song.artist else "Unknown Artist",
                 duration=string_to_seconds(song.duration),
             )
             if path.exists():
@@ -508,13 +508,35 @@ class PyMusicTerm(App):
             await self.redraw_playlist()
             await self.update_lyrics_view()
 
+    def handle_exception(self, error: Exception) -> None:
+        """Handle exceptions to prevent them from being displayed in UI."""
+        logger: logging.Logger = logging.getLogger(__name__)
+
+        # Log Rich Presence-related errors quietly
+        if (
+            "rich_presence" in str(error)
+            or "Discord" in str(error)
+            or "pypresence" in str(error)
+        ):
+            logger.debug(f"Rich Presence error (suppressed): {error}")
+            return
+
+        # Log other important errors, but do not display them in the UI.
+        logger.error(f"Application error: {error}")
+
+    async def on_exception(self, error: Exception) -> None:
+        self.handle_exception(error)
+
 
 async def main() -> None:
     setting = SettingManager()
     app = PyMusicTerm(setting)
-    task: asyncio.Task[None] = asyncio.create_task(
-        rich_presence(app.player, start=time.time()),
-    )
+    try:
+        task: asyncio.Task[None] = asyncio.create_task(
+            rich_presence(app.player, start=time.time()),
+        )
+    except Exception as e:
+        logger.warning(f"Rich Presence failed: {e}")
     try:
         await app.run_async()
     finally:

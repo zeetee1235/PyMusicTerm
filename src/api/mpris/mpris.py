@@ -310,7 +310,7 @@ class DBusAdapter:
             self._started = True
 
         except Exception as e:
-            logger.error(f"Failed to start DBus server: {e}", exc_info=True)
+            logger.error(f"Failed to start DBus server: {e}")
             self._started = False
 
     def start_background(self) -> None:
