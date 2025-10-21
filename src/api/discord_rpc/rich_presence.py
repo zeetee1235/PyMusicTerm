@@ -1,5 +1,4 @@
 import asyncio
-import contextlib
 import logging
 import time
 
@@ -37,7 +36,7 @@ async def rich_presence(player: PyMusicTermPlayer, start: int) -> None:
     """Main function to run the Rich Presence update loop."""
     rpc = None
     retry_count = 0
-    
+
     try:
         rpc = AioPresence(CLIENT_ID)
         await rpc.connect()
@@ -50,7 +49,7 @@ async def rich_presence(player: PyMusicTermPlayer, start: int) -> None:
                     logger.debug("No song is playing")
                     await asyncio.sleep(NO_SONG_SLEEP_INTERVAL)
                     continue
-                    
+
                 try:
                     artist_name: str = song.get_formatted_artists()
                     song_name: str = song.title
@@ -73,7 +72,7 @@ async def rich_presence(player: PyMusicTermPlayer, start: int) -> None:
                         state=f"Album: {album_name}",
                         start=start,
                     )
-                    
+
                     # if succes reset retry count
                     retry_count = 0
 
@@ -91,7 +90,7 @@ async def rich_presence(player: PyMusicTermPlayer, start: int) -> None:
                     continue
 
                 await asyncio.sleep(UPDATE_INTERVAL)
-                
+
             except asyncio.CancelledError:
                 logger.info("Rich Presence task cancelled")
                 break
@@ -102,7 +101,7 @@ async def rich_presence(player: PyMusicTermPlayer, start: int) -> None:
                     logger.error("Too many errors in Rich Presence, stopping")
                     return
                 await asyncio.sleep(RETRY_DELAY)
-                
+
     except DiscordNotFound:
         logger.info("Discord not found - Rich Presence disabled")
         return  # end

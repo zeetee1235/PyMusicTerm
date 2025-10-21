@@ -464,35 +464,33 @@ class PyMusicTerm(App):
 
     def handle_exception(self, error: Exception) -> None:
         """Handle exceptions to prevent them from being displayed in UI."""
-        logger = logging.getLogger(__name__)
-        
+        logger: logging.Logger = logging.getLogger(__name__)
+
         # Log Rich Presence-related errors quietly
-        if "rich_presence" in str(error) or "Discord" in str(error) or "pypresence" in str(error):
+        if (
+            "rich_presence" in str(error)
+            or "Discord" in str(error)
+            or "pypresence" in str(error)
+        ):
             logger.debug(f"Rich Presence error (suppressed): {error}")
             return
-            
+
         # Log other important errors, but do not display them in the UI.
         logger.error(f"Application error: {error}")
-        
+
     async def on_exception(self, error: Exception) -> None:
-        """Textual의 예외 핸들러."""
         self.handle_exception(error)
 
 
 async def main() -> None:
     setting = SettingManager()
     app = PyMusicTerm(setting)
-    
-    # Rich Presence tesk safety lapping
-    async def safe_rich_presence():
-        try:
-            await rich_presence(app.player, start=time.time())
-        except Exception as e:
-            # just logging Rich Presence error dont stop app
-            logger = logging.getLogger(__name__)
-            logger.warning(f"Rich Presence failed: {e}")
-    
-    task: asyncio.Task[None] = asyncio.create_task(safe_rich_presence())
+    try:
+        task: asyncio.Task[None] = asyncio.create_task(
+            rich_presence(app.player, start=time.time()),
+        )
+    except Exception as e:
+        logger.warning(f"Rich Presence failed: {e}")
     try:
         await app.run_async()
     finally:

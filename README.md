@@ -1,90 +1,81 @@
-> [!WARNING]
-> This project is a work in progress. You may encounter some bugs — feel free to open an issue or submit a pull request with a fix.
+# Pymusicterm app
 
-# pymusicterm
-**pymusicterm** is a terminal-based music player that allows you to play your favorite songs directly from your terminal. 
+## Run the app
 
-## Features
-- Play offline music.
-- Download music from YouTube and Youtube Music.
-- Terminal-based interface.
-- Cross-platform support (Linux, macOS, Windows).
-- MPRIS server integration for Linux and MACOS to control playback with external tools.
-- STMC integration for Windows to control playback with windows.
+### uv
 
-## Images
-### On windows
-![stmc support](https://github.com/ZachVFXX/PyMusicTerm/blob/453792bb8122e1ed2f496eb40b7d3a67ff109880/imgs/windows-ui-1.png) ![youtube search](imgs/windows-ui-2.png)
-### On Linux and MacOS
-TODO! (The same as windows, with mpris support !)
+Run as a desktop app:
 
-### Important
-The song are in the `~/.pymusicterm/musics` folder with specific name, tags and covers. 
-
-## Installation with uv
-```bash	
-pip install uv
-git clone https://github.com/ZachVFXX/PyMusicTerm.git
-cd PyMusicTerm
-uv sync #or pip install the dependencies
+```
+uv run flet run
 ```
 
-### Prerequisites
-- Python 3.12 (tested) or higher.
-- `ffmpeg` (required for `pydub` and audio processing).
-- On linux, install PyObject for mpris
+Run as a web app:
 
-### Basic Commands
-- **Download from YouTube:** Search for a song or paste the URL.
-- **Control playback:** Use keyboard shortcuts to play, pause, skip, or adjust volume.
+```
+uv run flet run --web
+```
 
-## Keybinds
-| Key     | Description            |
-| ------- | ---------------------- |
-| `q`     | Seek backward          |
-| `s`     | Play/Pause             |
-| `space` | Play/Pause             |
-| `d`     | Seek forward           |
-| `r`     | Shuffle                |
-| `l`     | Loop at the end        |
-| `a`     | Previous song          |
-| `e`     | Next song              |
-| `&`     | Go to the search tab   |
-| `é`     | Go to the playlist tab |
-| `"`     | Go to the lyrics tab   |
-| `j`     | Volume down (by 0.1)   |
-| `k`     | Volume up (by 0.1)     |
+### Poetry
 
+Install dependencies from `pyproject.toml`:
 
-## Configuration
+```
+poetry install
+```
 
-The player reads a configuration file (`setting.toml`) for custom settings in the `~/.pymusicterm` directory.
+Run as a desktop app:
 
-## Dependencies
+```
+poetry run flet run
+```
 
-`pymusicterm` relies on the following libraries:
+Run as a web app:
 
-- [`just-playback`](https://pypi.org/project/just-playback/): Audio playback management.
-- [`msgspec`](https://pypi.org/project/msgspec/): High-performance serialization.
-- [`pydub`](https://pypi.org/project/pydub/): Audio processing.
-- [`pytubefix`](https://pypi.org/project/pytubefix/): Simplified YouTube streaming.
-- [`textual`](https://pypi.org/project/textual/): Terminal user interface framework.
-- [`textual-image`](https://pypi.org/project/textual-image/): Terminal image display.
-- [`ytmusicapi`](https://pypi.org/project/ytmusicapi/): YouTube Music API integration.
-- [`mpris-server`](https://pypi.org/project/mpris-server/): MPRIS integration (Linux and macos only).
-- [`winrt-windows project`](https://github.com/pywinrt/pywinrt): Windows Media Controller.
-- [`music-tag`](https://pypi.org/project/music-tag/): Music metadata
+```
+poetry run flet run --web
+```
 
-## Contributing
+For more details on running the app, refer to the [Getting Started Guide](https://flet.dev/docs/getting-started/).
 
-Contributions are welcome! Please follow these steps:
+## Build the app
 
-1. Fork the repository.
-2. Create a new branch for your feature/bugfix.
-3. Submit a pull request with a detailed explanation of changes.
+### Android
 
-## License
+```
+flet build apk -v
+```
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+For more details on building and signing `.apk` or `.aab`, refer to the [Android Packaging Guide](https://flet.dev/docs/publish/android/).
 
----
+### iOS
+
+```
+flet build ipa -v
+```
+
+For more details on building and signing `.ipa`, refer to the [iOS Packaging Guide](https://flet.dev/docs/publish/ios/).
+
+### macOS
+
+```
+flet build macos -v
+```
+
+For more details on building macOS package, refer to the [macOS Packaging Guide](https://flet.dev/docs/publish/macos/).
+
+### Linux
+
+```
+flet build linux -v
+```
+
+For more details on building Linux package, refer to the [Linux Packaging Guide](https://flet.dev/docs/publish/linux/).
+
+### Windows
+
+```
+flet build windows -v
+```
+
+For more details on building Windows package, refer to the [Windows Packaging Guide](https://flet.dev/docs/publish/windows/).
