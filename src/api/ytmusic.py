@@ -64,52 +64,24 @@ class YTMusic:
             msg = f"filter must be a string, not {type(filter)}"
             raise TypeError(msg)
 
-        # Search without filter to get all types of results
-        # Then filter for songs manually due to YouTube Music API limitations on Linux
-        try:
-            # Try with filter first
-            results: list[dict] = self.client.search(query, filter)
-            if not results:
-                # Fall back to no filter and manual filtering
-                logger.info("No results with filter, trying without filter")
-                all_results = self.client.search(query)
-                # Filter for song-like results
-                results = [r for r in all_results if 
-                          r.get('resultType') in ['song', 'video'] or 
-                          ('videoId' in r and 'title' in r)]
-        except Exception as e:
-            logger.warning(f"Search failed: {e}, trying without filter")
-            try:
-                all_results = self.client.search(query)
-                results = [r for r in all_results if 
-                          r.get('resultType') in ['song', 'video'] or 
-                          ('videoId' in r and 'title' in r)]
-            except Exception as e2:
-                logger.error(f"Both search methods failed: {e2}")
-                results = []
+        results: list[dict] = self.client.search(query, filter)
 
         r: list[SongData] = []
         for result in results:
-            title: str = result.get("title", "Unknown")
-            artists_data = result.get("artists", [])
-            artist: list[str] = [artist["name"] for artist in artists_data if isinstance(artist, dict) and "name" in artist]
-            
+            title: str = result.get("title", "Unknown Title")
+            artist: list[str] = [artist["name"] for artist in result.get("artists", [])]
             if not artist:
                 artist = ["Unknown Artist"]
-            duration: str = result.get("duration", "Unknown")
-            video_id: str = result.get("videoId", "Unknown")
-            
-            # Handle thumbnail
-            try:
-                thumbnail: ImageFile = Image.open(
-                    requests.get(result["thumbnails"][0]["url"], stream=True).raw,  # noqa: S113
-                )
-            except (KeyError, IndexError, Exception):
-                # Create a placeholder if thumbnail fails
-                thumbnail = None
-                
+            duration: str = result.get("duration", "Unknown Duration")
+            video_id: str = result.get(
+                "videoId",
+                "dQw4w9WgXcQ",
+            )  # Default to a dummy video id
+            thumbnail: ImageFile = Image.open(
+                requests.get(result["thumbnails"][0]["url"], stream=True).raw,  # noqa: S113
+            )
             x = result.get("album", None)
-            album = x.get("name") if x else "Unknown"
+            album = x.get("name") if x else "Unknown Album"
             r.append(
                 SongData(
                     title=title,

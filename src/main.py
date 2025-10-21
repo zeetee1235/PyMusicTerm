@@ -28,6 +28,7 @@ from textual.worker import Worker, get_current_worker
 from textual_image.widget import Image as WidgetImage
 
 from api.discord_rpc.rich_presence import rich_presence
+from api.downloader import Downloader
 from api.lyrics import download_lyrics, parse_lyrics
 from api.protocols import SongData
 from player.player import PyMusicTermPlayer
@@ -38,7 +39,6 @@ if TYPE_CHECKING:
     from textual.widget import Widget
 
     from player.media_control import (
-        MediaControlAndroid,
         MediaControlMPRIS,
         MediaControlWin32,
     )
@@ -62,6 +62,11 @@ class PyMusicTerm(App):
         ('"', "return_on_lyrics_tab", "Go to the lyrics tab"),
         ("j", "volume(-0.01)", "Volume down"),
         ("k", "volume(0.01)", "Volume up"),
+        ("raise_volume", "volume(0.1)", "Volume up"),
+        ("lower_volume", "volume(-0.1)", "Volume down"),
+        ("mute_volume", "mute", "Mute"),
+        ("m", "mute", "Mute"),
+        ("ctrl+delete", "delete", "Delete the selected song"),
     ]
 
     def __init__(self, setting: SettingManager) -> None:
@@ -73,8 +78,6 @@ class PyMusicTerm(App):
 
         if self.setting.os == "win32":
             from player.media_control import MediaControlWin32 as MediaControl  # noqa: I001, PLC0415
-        elif setting.os == "android":
-            from player.media_control import MediaControlAndroid as MediaControl  # noqa: I001, PLC0415
         else:
             from player.media_control import MediaControlMPRIS as MediaControl  # noqa: I001, PLC0415
         requests_cache.install_cache(
@@ -82,10 +85,13 @@ class PyMusicTerm(App):
             expire_after=timedelta(hours=1),
         )
 
-        self.media_control: (
-            MediaControlMPRIS | MediaControlWin32 | MediaControlAndroid
-        ) = MediaControl()
-        self.player = PyMusicTermPlayer(self.setting, self.media_control)
+        self.media_control: MediaControlMPRIS | MediaControlWin32 = MediaControl()
+        self.downloader = Downloader(self.setting.music_dir, self.progress_callback)
+        self.player = PyMusicTermPlayer(
+            self.setting,
+            self.media_control,
+            self.downloader,
+        )
         self.media_control.init(self.player)
 
     def compose(self) -> ComposeResult:
@@ -100,6 +106,13 @@ class PyMusicTerm(App):
                             ("Video (Stream Youtube Video)", "videos"),
                         ],
                         allow_blank=False,
+                    )
+                    yield ProgressBar(
+                        100,
+                        id="progress_bar",
+                        show_eta=False,
+                        show_percentage=False,
+                        disabled=True,
                     )
                     yield ListView(id="search_results")
             with TabPane("Playlist", id="playlist"):  # noqa: SIM117
@@ -153,14 +166,17 @@ class PyMusicTerm(App):
         """
         If the tab is playlist, clear the options and add the songs to the playlist.
         """
-        playlist_results: ListView = self.query_one("#playlist_results")
         if event is None or event.tab.id.endswith("playlist"):
-            children_id: list[str] = [
-                child.id.removeprefix("id-") for child in playlist_results.children
-            ]
-            for song in self.player.list_of_downloaded_songs:
-                if song.video_id not in children_id:
-                    await playlist_results.append(await self._create_song_item(song))
+            await self.redraw_playlist()
+
+    async def redraw_playlist(self) -> None:
+        playlist_results: ListView = self.query_one("#playlist_results")
+        children_id: list[str] = [
+            child.id.removeprefix("id-") for child in playlist_results.children
+        ]
+        for song in self.player.list_of_downloaded_songs:
+            if song.video_id not in children_id:
+                await playlist_results.append(await self._create_song_item(song))
 
     async def update_time(self) -> None:
         """Update the time label of the player, and update the player."""
@@ -262,8 +278,14 @@ class PyMusicTerm(App):
         """Select a song from the search results and play it."""
         video_id: str = str(event.item.id).removeprefix("id-")
         search_results: ListView = self.query_one("#search_results")
-        search_results.loading = True
+        search_results.disabled = True
+        progress_bar: ProgressBar = self.query_one("#progress_bar")
+        progress_bar.visible = True
         self.download_async(video_id)
+
+    def progress_callback(self, downloaded: int, total: int) -> None:
+        progress_bar: ProgressBar = self.query_one("#progress_bar")
+        progress_bar.update(progress=downloaded / total * 100)
 
     @work(thread=True, exclusive=True)
     def download_async(self, video_id: str) -> None:
@@ -276,7 +298,9 @@ class PyMusicTerm(App):
         await self.toggle_button()
         await self.update_lyrics_view()
         search_results: ListView = self.query_one("#search_results")
-        search_results.loading = False
+        search_results.disabled = False
+        progress_bar: ProgressBar = self.query_one("#progress_bar")
+        progress_bar.visible = False
 
     async def load_lyric(self, listview: ListView, path: Path) -> None:
         await listview.clear()
@@ -460,7 +484,29 @@ class PyMusicTerm(App):
     async def action_volume(self, volume: float) -> None:
         """Increase the volume."""
         self.player.volume(volume)
-        self.notify(f"Volume changed to {self.player.music_player.volume:.2f}")
+        self.notify(
+            f"Volume changed to {self.player.music_player.volume:.2f}",
+            timeout=0.2,
+        )
+
+    async def action_mute(self) -> None:
+        """Mute the player."""
+        if self.player.music_player.volume == 0:
+            self.player.volume(self.setting.volume)
+            self.notify("Unmuted", timeout=0.2)
+        else:
+            self.player.music_player.volume = 0
+            self.notify("Muted", timeout=0.2)
+
+    async def action_delete(self) -> None:
+        """Delete the selected song."""
+        if self.player.current_song:
+            logger.info("Deleting song at index %s", self.player.current_song_index)
+            self.player.delete_song(self.player.current_song_index)
+            playlist_results: ListView = self.query_one("#playlist_results")
+            await playlist_results.clear()
+            await self.redraw_playlist()
+            await self.update_lyrics_view()
 
     def handle_exception(self, error: Exception) -> None:
         """Handle exceptions to prevent them from being displayed in UI."""
